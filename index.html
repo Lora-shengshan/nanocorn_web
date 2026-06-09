@@ -1,4 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nanocorn - Secure Matchmaking and Broker Escrow Marketplace</title>
+    
+    <!-- Tailwind CSS for elegant responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            navy: '#0f172a',
+                            emerald: '#059669',
+                            slate: '#334155',
+                            light: '#f8fafc'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- i18next and HTTP Backend CDN libraries for declarative L10N -->
+    <script src="https://cdn.jsdelivr.net/npm/i18next@23.11.5/dist/umd/i18next.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/i18next-http-backend@2.5.1/i18nextHttpBackend.min.js"></script>
 
-<html>
-<HEAD></HEAD><BODY> place hold for nanocorn </BODY>
+    <!-- Google Identity Services (GSI) Client Library for Federated OAuth Popups -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body class="bg-white text-brand-navy min-h-screen flex flex-col font-sans">
+
+    <!-- =========================================================================
+         HEADER NAVIGATION BAR
+         ========================================================================= -->
+    <header class="border-b border-slate-100 bg-white sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Brand Logo & Name -->
+            <div class="flex items-center space-x-3">
+                <div class="bg-brand-emerald text-white p-2 rounded-lg flex items-center justify-center shadow-md shadow-emerald-100">
+                    <i class="fa-solid fa-corn text-xl">🌽</i>
+                </div>
+                <span class="text-2xl font-black tracking-tight text-brand-navy">nanocorn</span>
+            </div>
+
+            <!-- Left/Center Links -->
+            <nav class="hidden md:flex space-x-8 text-sm font-semibold text-brand-slate">
+                <a href="#faq" class="hover:text-brand-emerald transition-colors" data-i18n="FAQ">FAQ</a>
+                <a href="#resource" class="hover:text-brand-emerald transition-colors" data-i18n="RESOURCE">RESOURCE</a>
+            </nav>
+
+            <!-- Language Toggle & Auth CTA -->
+            <div class="flex items-center space-x-4">
+                <!-- Multi-Locale Selector -->
+                <div class="relative inline-block text-left">
+                    <select id="lang-selector" onchange="changeLanguage(this.value)" class="bg-brand-light border border-slate-200 text-brand-slate text-xs font-bold rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-brand-emerald transition-all cursor-pointer">
+                        <option value="en">EN</option>
+                        <option value="zh_TW">繁中</option>
+                        <option value="ja_JP">日本語</option>
+                        <option value="ko_KR">한국어</option>
+                    </select>
+                </div>
+
+                <!-- Session Authentication Button -->
+                <div id="auth-header-container">
+                    <button onclick="openAuthModal()" class="bg-brand-navy hover:bg-slate-800 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all shadow-md shadow-slate-100" data-i18n="Sign Up / Sign In">Sign Up / Sign In</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- =========================================================================
+         HERO CENTERPIECE SECTION
+         ========================================================================= -->
+    <main class="flex-grow flex flex-col justify-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="text-center max-w-3xl mx-auto space-y-8">
+            <!-- Platform Brand Slogan -->
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-brand-navy tracking-tight leading-none" data-i18n="Match with global software assets seamlessly under Zero-Funds broker trust.">
+                Match with global software assets seamlessly under Zero-Funds broker trust.
+            </h1>
+            <p class="text-brand-slate text-lg sm:text-xl font-medium" data-i18n="Connect developers with accredited buyers globally. Standard NDAs, escrow splits, and private chats.">
+                Connect developers with accredited buyers globally. Standard NDAs, escrow splits, and private chats.
+            </p>
+
+            <!-- Dual Role CTA Registration Gates -->
+            <div class="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-6 pt-4">
+                <button onclick="openAuthModal('buyer')" class="w-full sm:w-56 bg-brand-emerald hover:bg-emerald-700 text-white text-lg font-bold py-4 rounded-xl transition-all shadow-lg shadow-emerald-100 flex items-center justify-center gap-2 hover:scale-[1.02] transform">
+                    <i class="fa-solid fa-chart-line"></i> <span data-i18n="Buyer">Buyer</span>
+                </button>
+                <button onclick="openAuthModal('seller')" class="w-full sm:w-56 bg-brand-navy hover:bg-slate-800 text-white text-lg font-bold py-4 rounded-xl transition-all shadow-lg shadow-slate-200 flex items-center justify-center gap-2 hover:scale-[1.02] transform">
+                    <i class="fa-solid fa-code"></i> <span data-i18n="Seller">Seller</span>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- =========================================================================
+         FOOTER LEGAL NAV LINKS
+         ========================================================================= -->
+    <footer class="border-t border-slate-100 bg-brand-light py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="text-xs text-brand-slate font-medium">
+                &copy; 2026 nanocorn Platform. All rights reserved. (Portable Standalone MVP Edition)
+            </div>
+            <div class="flex flex-wrap justify-center gap-6 text-xs font-semibold text-brand-slate">
+                <a href="./legal/terms.html" class="hover:text-brand-emerald transition-colors" data-i18n="Terms of Service">Terms of Service</a>
+                <a href="./legal/privacy.html" class="hover:text-brand-emerald transition-colors" data-i18n="Privacy Policy">Privacy Policy</a>
+                <a href="./legal/disclaimer.html" class="hover:text-brand-emerald transition-colors" data-i18n="Broker Disclaimer">Broker Disclaimer</a>
+                <a href="./legal/nda.html" class="hover:text-brand-emerald transition-colors" data-i18n="Standard NDA">Standard NDA</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- =========================================================================
+         UNIFIED AUTHENTICATION MODAL (GOOGLE GSI & EMAIL CODE OTP)
+         ========================================================================= -->
+    <div id="auth-modal" class="fixed inset-0 bg-brand-navy/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 sm:p-8 relative shadow-2xl border border-slate-100 animate-in fade-in duration-200">
+            <!-- Close Trigger -->
+            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-brand-slate hover:text-brand-navy transition-colors text-xl focus:outline-none">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <!-- Modal Title -->
+            <div class="text-center space-y-2 mb-6">
+                <h3 class="text-2xl font-black text-brand-navy" data-i18n="Sign Up / Sign In">Sign Up / Sign In</h3>
+                <p class="text-xs text-brand-slate font-semibold" data-i18n="Verify identity securely to explore broker assets.">Verify identity securely to explore broker assets.</p>
+            </div>
+
+            <!-- Google GSI Sign-In Button Container -->
+            <div class="mb-6 flex flex-col items-center justify-center">
+                <div id="google-gsi-signin-btn" class="w-full flex justify-center"></div>
+            </div>
+
+            <!-- Divider -->
+            <div class="relative flex py-4 items-center mb-6">
+                <div class="flex-grow border-t border-slate-200"></div>
+                <span class="flex-shrink mx-4 text-slate-400 text-xs font-bold" data-i18n="OR">OR</span>
+                <div class="flex-grow border-t border-slate-200"></div>
+            </div>
+
+            <!-- Email Registration Flow Wizard Form -->
+            <form id="auth-wizard-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
+                
+                <!-- Role Selection -->
+                <div id="role-selection-group">
+                    <label class="block text-xs font-bold text-brand-slate mb-2" data-i18n="Select your role to register:">Select your role to register:</label>
+                    <div class="flex gap-4">
+                        <label class="flex-1 flex items-center justify-center gap-2 border border-slate-200 rounded-xl py-3 cursor-pointer hover:border-brand-emerald transition-all has-[:checked]:border-brand-emerald has-[:checked]:bg-emerald-50/30">
+                            <input type="radio" name="role" value="buyer" checked class="accent-brand-emerald">
+                            <span class="text-sm font-bold text-brand-navy" data-i18n="Buyer">Buyer</span>
+                        </label>
+                        <label class="flex-1 flex items-center justify-center gap-2 border border-slate-200 rounded-xl py-3 cursor-pointer hover:border-brand-emerald transition-all has-[:checked]:border-brand-emerald has-[:checked]:bg-emerald-50/30">
+                            <input type="radio" name="role" value="seller" class="accent-brand-emerald">
+                            <span class="text-sm font-bold text-brand-navy" data-i18n="Seller">Seller</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Input: Email -->
+                <div>
+                    <label class="block text-xs font-bold text-brand-slate mb-1" data-i18n="Enter your email">Enter your email</label>
+                    <input type="email" id="auth-email" required class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="you@example.com">
+                </div>
+
+                <!-- Input: Password -->
+                <div>
+                    <label class="block text-xs font-bold text-brand-slate mb-1" data-i18n="Enter password">Enter password</label>
+                    <input type="password" id="auth-password" required minlength="6" class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="••••••••">
+                </div>
+
+                <!-- Step 2 Verification Pane (Hidden initially until OTP code dispatches) -->
+                <div id="otp-verification-section" class="hidden border-t border-slate-100 pt-4 space-y-4">
+                    <div class="bg-emerald-50/50 border border-emerald-100 rounded-xl p-3 text-xs text-brand-emerald font-semibold flex items-start gap-2">
+                        <i class="fa-solid fa-circle-check mt-0.5"></i>
+                        <div>
+                            <strong data-i18n="Email Verification Sent!">Email Verification Sent!</strong>
+                            <p data-i18n="We sent a 6-digit random code to your email. Please enter it below to confirm ownership.">We sent a 6-digit random code to your email. Please enter it below to confirm ownership.</p>
+                        </div>
+                    </div>
+
+                    <!-- Input: Display Name -->
+                    <div>
+                        <label class="block text-xs font-bold text-brand-slate mb-1" data-i18n="Display Name">Display Name</label>
+                        <input type="text" id="auth-display-name" class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="John Doe">
+                    </div>
+
+                    <!-- Input: 6-Digit OTP Verification Code -->
+                    <div>
+                        <label class="block text-xs font-bold text-brand-slate mb-1" data-i18n="Verification Code">Verification Code</label>
+                        <input type="text" id="auth-otp-code" maxlength="6" class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm text-center font-bold tracking-widest focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="000000">
+                    </div>
+                </div>
+
+                <!-- Action Button Trigger -->
+                <button type="submit" id="auth-submit-btn" class="w-full bg-brand-emerald hover:bg-emerald-700 text-white text-sm font-bold py-3 rounded-xl transition-all shadow-md shadow-emerald-100" data-i18n="Send Verification Code">
+                    Send Verification Code
+                </button>
+
+                <!-- Toggle Login/Signup Alternative (Mocked) -->
+                <div class="text-center pt-2">
+                    <button type="button" onclick="toggleAuthMode()" class="text-xs font-semibold text-brand-slate hover:text-brand-emerald transition-colors" id="auth-toggle-link">
+                        Already have an account? Sign In directly
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         CORE CONTROLLER SCRIPTS
+         ========================================================================= -->
+    <script>
+        const API_BASE_URL = "http://127.0.0.1:8080";
+        let isLoginMode = false;
+        let isCodeSent = false;
+
+        // ---------------------------------------------------------------------
+        // L10N Loader Configuration
+        // ---------------------------------------------------------------------
+        async function initL10n() {
+            await i18next
+                .use(i18nextHttpBackend)
+                .init({
+                    lng: localStorage.getItem('user_lang') || 'en',
+                    fallbackLng: 'en',
+                    backend: {
+                        loadPath: './locales/{{lng}}.json'
+                    }
+                });
+            
+            document.getElementById('lang-selector').value = i18next.language;
+            document.documentElement.lang = i18next.language;
+            applyTranslations();
+        }
+
+        function applyTranslations() {
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                element.textContent = i18next.t(key);
+            });
+            // Update placeholders if any exist
+            const emailInput = document.getElementById('auth-email');
+            if (emailInput) emailInput.placeholder = i18next.t("Enter your email");
+            const passInput = document.getElementById('auth-password');
+            if (passInput) passInput.placeholder = "••••••••";
+        }
+
+        function changeLanguage(localeCode) {
+            i18next.changeLanguage(localeCode, () => {
+                localStorage.setItem('user_lang', localeCode);
+                document.documentElement.lang = localeCode;
+                applyTranslations();
+            });
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            initL10n();
+            setupGoogleGSI();
+            checkExistingSession();
+        });
+
+        // ---------------------------------------------------------------------
+        // Google GSI Sign-In Handlers (Portability Verified)
+        // ---------------------------------------------------------------------
+        function setupGoogleGSI() {
+            try {
+                google.accounts.id.initialize({
+                    client_id: "961610016672-u9atthbs32er3hie9c859j23rpcqk1dt.apps.googleusercontent.com",
+                    callback: handleGoogleCredentialResponse
+                });
+                google.accounts.id.renderButton(
+                    document.getElementById("google-gsi-signin-btn"),
+                    { theme: "outline", size: "large", width: "320" }
+                );
+            } catch (err) {
+                console.error("Failed to load Google GSI SDK:", err);
+            }
+        }
+
+        async function handleGoogleCredentialResponse(response) {
+            const idToken = response.credential;
+            const selectedRole = document.querySelector('input[name="role"]:checked')?.value || 'buyer';
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ idToken: idToken, role: selectedRole })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || "Google Login failed.");
+
+                saveSession(data);
+                closeAuthModal();
+                alert(`Welcome back, ${data.displayName}!`);
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        // Modal & Form State Management
+        // ---------------------------------------------------------------------
+        function openAuthModal(preselectedRole = null) {
+            document.getElementById('auth-modal').classList.remove('hidden');
+            if (preselectedRole) {
+                const radio = document.querySelector(`input[name="role"][value="${preselectedRole}"]`);
+                if (radio) radio.checked = true;
+            }
+        }
+
+        function closeAuthModal() {
+            document.getElementById('auth-modal').classList.add('hidden');
+            resetAuthForm();
+        }
+
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            const title = document.querySelector('#auth-modal h3');
+            const submitBtn = document.getElementById('auth-submit-btn');
+            const toggleLink = document.getElementById('auth-toggle-link');
+            const roleGroup = document.getElementById('role-selection-group');
+            const otpSection = document.getElementById('otp-verification-section');
+
+            if (isLoginMode) {
+                title.textContent = i18next.t("Sign Up / Sign In");
+                submitBtn.textContent = "Sign In";
+                toggleLink.textContent = "Need an account? Sign Up instead";
+                roleGroup.classList.add('hidden');
+                otpSection.classList.add('hidden');
+            } else {
+                title.textContent = i18next.t("Sign Up / Sign In");
+                submitBtn.textContent = i18next.t("Send Verification Code");
+                toggleLink.textContent = "Already have an account? Sign In directly";
+                roleGroup.classList.remove('hidden');
+                if (isCodeSent) {
+                    otpSection.classList.remove('hidden');
+                    submitBtn.textContent = i18next.t("Complete Registration");
+                }
+            }
+        }
+
+        function resetAuthForm() {
+            isLoginMode = false;
+            isCodeSent = false;
+            document.getElementById('auth-wizard-form').reset();
+            document.getElementById('role-selection-group').classList.remove('hidden');
+            document.getElementById('otp-verification-section').classList.add('hidden');
+            document.getElementById('auth-submit-btn').textContent = i18next.t("Send Verification Code");
+            document.getElementById('auth-toggle-link').textContent = "Already have an account? Sign In directly";
+        }
+
+        // ---------------------------------------------------------------------
+        // API Form Submission Handler (Email OTP Flow)
+        // ---------------------------------------------------------------------
+        async function handleAuthSubmit(event) {
+            event.preventDefault();
+
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            const role = document.querySelector('input[name="role"]:checked')?.value || 'buyer';
+
+            if (isLoginMode) {
+                // Execute standard password login
+                try {
+                    const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email: email, password: password })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.detail || "Login failed.");
+
+                    saveSession(data);
+                    closeAuthModal();
+                    alert(`Welcome, ${data.displayName}!`);
+                } catch (error) {
+                    alert(error.message);
+                }
+                return;
+            }
+
+            if (!isCodeSent) {
+                // Step 1: Request OTP code via AWS SES
+                try {
+                    const res = await fetch(`${API_BASE_URL}/api/auth/send-code`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email: email, role: role })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.detail || "Failed to send code.");
+
+                    isCodeSent = true;
+                    document.getElementById('otp-verification-section').classList.remove('hidden');
+                    document.getElementById('auth-submit-btn').textContent = i18next.t("Complete Registration");
+                } catch (error) {
+                    alert(error.message);
+                }
+            } else {
+                // Step 2: Validate OTP and Password registration
+                const code = document.getElementById('auth-otp-code').value;
+                const displayName = document.getElementById('auth-display-name').value;
+
+                try {
+                    const res = await fetch(`${API_BASE_URL}/api/auth/verify-code`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            email: email,
+                            code: code,
+                            password: password,
+                            displayName: displayName
+                        })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.detail || "Registration failed.");
+
+                    saveSession(data);
+                    closeAuthModal();
+                    alert(i18next.t("Successfully Registered!"));
+                } catch (error) {
+                    alert(error.message);
+                }
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        // Portable Session Management
+        // ---------------------------------------------------------------------
+        function saveSession(data) {
+            localStorage.setItem("user_token", data.token);
+            localStorage.setItem("user_id", data.userId);
+            localStorage.setItem("user_role", data.role);
+            localStorage.setItem("user_display_name", data.displayName);
+            renderSessionUI();
+        }
+
+        function checkExistingSession() {
+            if (localStorage.getItem("user_token")) {
+                renderSessionUI();
+            }
+        }
+
+        function renderSessionUI() {
+            const container = document.getElementById('auth-header-container');
+            const displayName = localStorage.getItem("user_display_name");
+            const role = localStorage.getItem("user_role").toUpperCase();
+
+            container.innerHTML = `
+                <div class="flex items-center space-x-3 bg-brand-light px-3 py-1.5 rounded-lg border border-slate-200">
+                    <span class="text-xs font-black text-brand-emerald tracking-wide bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">${role}</span>
+                    <span class="text-sm font-bold text-brand-navy">${displayName}</span>
+                    <button onclick="logoutSession()" class="text-brand-slate hover:text-red-500 transition-colors text-sm font-semibold pl-2 border-l border-slate-200"><i class="fa-solid fa-right-from-bracket"></i></button>
+                </div>
+            `;
+        }
+
+        function logoutSession() {
+            localStorage.clear();
+            const container = document.getElementById('auth-header-container');
+            container.innerHTML = `
+                <button onclick="openAuthModal()" class="bg-brand-navy hover:bg-slate-800 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all shadow-md shadow-slate-100" data-i18n="Sign Up / Sign In">Sign Up / Sign In</button>
+            `;
+            applyTranslations();
+            alert("Session logged out successfully.");
+        }
+    </script>
+</body>
 </html>
