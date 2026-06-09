@@ -322,6 +322,8 @@
                 const radio = document.querySelector(`input[name="role"][value="${preselectedRole}"]`);
                 if (radio) radio.checked = true;
             }
+            // Trigger Google GSI rendering now that the container is visible!
+            setupGoogleGSI();
         }
 
         function closeAuthModal() {
