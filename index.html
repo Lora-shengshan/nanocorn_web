@@ -32,7 +32,7 @@
     <script src="https://cdn.jsdelivr.net/npm/i18next-http-backend@2.5.1/i18nextHttpBackend.min.js"></script>
 
     <!-- Google Identity Services (GSI) Client Library for Federated OAuth Popups -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://accounts.google.com/gsi/client" onload="setupGoogleGSI()" async defer></script>
 </head>
 <body class="bg-white text-brand-navy min-h-screen flex flex-col font-sans">
 
@@ -272,6 +272,10 @@
         // Google GSI Sign-In Handlers (Portability Verified)
         // ---------------------------------------------------------------------
         function setupGoogleGSI() {
+            if (typeof google === 'undefined' || !google.accounts) {
+                console.log("Google GSI script not loaded yet. Waiting for onload...");
+                return;
+            }
             try {
                 google.accounts.id.initialize({
                     client_id: "961610016672-u9atthbs32er3hie9c859j23rpcqk1dt.apps.googleusercontent.com",
@@ -282,9 +286,10 @@
                     { theme: "outline", size: "large", width: "320" }
                 );
             } catch (err) {
-                console.error("Failed to load Google GSI SDK:", err);
+                console.error("Failed to render Google GSI Button:", err);
             }
         }
+        window.setupGoogleGSI = setupGoogleGSI;
 
         async function handleGoogleCredentialResponse(response) {
             const idToken = response.credential;
