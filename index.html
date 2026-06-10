@@ -120,6 +120,9 @@
             <button id="tab-btn-profile" onclick="switchTab('dashboard-profile')" class="flex-1 md:flex-none text-left px-4 py-3 rounded-xl transition-all bg-emerald-50 text-brand-emerald flex items-center gap-3">
                 <i class="fa-solid fa-user-gear"></i> <span data-i18n="KYC Settings">KYC Settings</span>
             </button>
+            <button id="tab-btn-market" onclick="switchTab('dashboard-market')" class="flex-1 md:flex-none text-left px-4 py-3 rounded-xl transition-all hover:bg-slate-50 flex items-center gap-3 hidden">
+                <i class="fa-solid fa-store"></i> <span data-i18n="Browse Marketplace">Browse Marketplace</span>
+            </button>
             <button id="tab-btn-bank" onclick="switchTab('dashboard-bank')" class="flex-1 md:flex-none text-left px-4 py-3 rounded-xl transition-all hover:bg-slate-50 flex items-center gap-3 hidden">
                 <i class="fa-solid fa-building-columns"></i> <span data-i18n="USD Bank Wire">USD Bank Wire</span>
             </button>
@@ -459,6 +462,111 @@
                     <!-- Dynamic Admin Moderation Cards go here -->
                 </div>
             </div>
+
+            <!-- SUB-VIEW: Browse Marketplace (Buyer Only) -->
+            <div id="sub-view-market" class="hidden space-y-6">
+                <div class="border-b border-slate-100 pb-4">
+                    <h2 class="text-xl font-black text-brand-navy" data-i18n="Browse Marketplace">Browse Marketplace</h2>
+                    <p class="text-xs text-brand-slate font-medium" data-i18n="Browse, filter, and execute NDAs to explore accredited startup listings.">Browse, filter, and execute NDAs to explore accredited startup listings.</p>
+                </div>
+
+                <!-- Advanced Filter Controls -->
+                <div class="bg-brand-light p-5 rounded-2xl border border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <!-- Tech Stack Keyword Search -->
+                    <div>
+                        <label class="block text-xs font-bold text-brand-slate mb-1" data-i18n="Search Tech Stack">Search Tech Stack</label>
+                        <div class="relative">
+                            <input type="text" id="filter-tech" oninput="applyMarketplaceFilters()" class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-xs focus:outline-none focus:border-brand-emerald text-brand-navy" placeholder="e.g. Python, React">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3.5 text-slate-400 text-xs"></i>
+                        </div>
+                    </div>
+
+                    <!-- Max Asking Price Filter -->
+                    <div>
+                        <label class="block text-xs font-bold text-brand-slate mb-1" data-i18n="Max Budget (USD)">Max Budget (USD)</label>
+                        <div class="relative">
+                            <input type="number" id="filter-price" oninput="applyMarketplaceFilters()" class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-xs focus:outline-none focus:border-brand-emerald text-brand-navy" placeholder="e.g. 50000">
+                            <i class="fa-solid fa-dollar-sign absolute left-3 top-3.5 text-slate-400 text-xs"></i>
+                        </div>
+                    </div>
+
+                    <!-- Product Category Selector -->
+                    <div>
+                        <label class="block text-xs font-bold text-brand-slate mb-1" data-i18n="Filter Category">Filter Category</label>
+                        <select id="filter-category" onchange="applyMarketplaceFilters()" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-brand-emerald text-brand-navy">
+                            <option value="" data-i18n="All Categories">All Categories</option>
+                            <option value="Web Application / SaaS">SaaS / Web App</option>
+                            <option value="iOS Application">iOS App</option>
+                            <option value="Android Application">Android App</option>
+                            <option value="Chrome / Browser Extension">Chrome Extension</option>
+                            <option value="Desktop Software (Mac/Windows)">Desktop Software</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Products Directory Grid -->
+                <div id="marketplace-products-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                    <!-- Dynamic Product Directory Cards go here -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         CONFIDENTIAL DIGITAL NDA MODAL (ONE-CLICK LOCALIZED SIGN-OFF)
+         ========================================================================= -->
+    <div id="nda-modal" class="fixed inset-0 bg-brand-navy/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 relative shadow-2xl border border-slate-100 flex flex-col max-h-[90vh]">
+            <!-- Close Trigger -->
+            <button onclick="closeNdaModal()" class="absolute top-4 right-4 text-brand-slate hover:text-brand-navy transition-colors text-xl focus:outline-none">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <!-- Header -->
+            <div class="text-center space-y-2 mb-4 flex-shrink-0">
+                <h3 class="text-xl font-black text-brand-navy" data-i18n="Standard NDA">Standard Non-Disclosure Agreement (NDA)</h3>
+                <p class="text-xs text-brand-slate font-semibold" data-i18n="Verify identity securely to explore broker assets.">Please read and sign this agreement to unlock protected details.</p>
+            </div>
+
+            <!-- Scrollable NDA Agreement Text -->
+            <div class="flex-grow overflow-y-auto border border-slate-100 bg-brand-light/35 rounded-xl p-4 text-xs text-brand-slate leading-relaxed space-y-4 mb-6 scrollbar-thin">
+                <section>
+                    <h4 class="font-bold text-brand-navy mb-1" data-i18n="1. Objective of Confidentiality">1. Objective of Confidentiality</h4>
+                    <p data-i18n="By clicking 'Sign NDA' or entering into a digital agreement on any listed product, the recipient (Buyer) agrees to receive protected, private, and confidential commercial and technical information (including the product's real name, original URLs, backend structures, customer statistics, and raw financial metrics) strictly for the purpose of evaluating a potential acquisition.">
+                        By clicking "Sign NDA" or entering into a digital agreement on any listed product, the recipient (Buyer) agrees to receive protected, private, and confidential commercial and technical information (including the product's real name, original URLs, backend structures, customer statistics, and raw financial metrics) strictly for the purpose of evaluating a potential acquisition.
+                    </p>
+                </section>
+
+                <section>
+                    <h4 class="font-bold text-brand-navy mb-1" data-i18n="2. Prohibited Disclosures">2. Prohibited Disclosures</h4>
+                    <p data-i18n="The Buyer agrees to keep all disclosed data strictly confidential. You may not copy, reverse-engineer, publish, or share any sensitive identifiers (especially the real product name and domain links) with competitors, third-party brokers, or on public forums without the prior written consent of the Seller.">
+                        The Buyer agrees to keep all disclosed data strictly confidential. You may not copy, reverse-engineer, publish, or share any sensitive identifiers (especially the real product name and domain links) with competitors, third-party brokers, or on public forums without the prior written consent of the Seller.
+                    </p>
+                </section>
+
+                <section>
+                    <h4 class="font-bold text-brand-navy mb-1" data-i18n="3. Audit Trail Agreement">3. Audit Trail Agreement</h4>
+                    <p data-i18n="nanocorn programmatically registers your digital signature, authenticated User ID, IP address, and timestamp upon executing this agreement. These metrics form a legally binding contract, which the platform retains to protect the proprietary IP of our independent developers and Sellers under international copyright and trade secret protections.">
+                        nanocorn programmatically registers your digital signature, authenticated User ID, IP address, and timestamp upon executing this agreement. These metrics form a legally binding contract, which the platform retains to protect the proprietary IP of our independent developers and Sellers under international copyright and trade secret protections.
+                    </p>
+                </section>
+            </div>
+
+            <!-- Input Signature Panel -->
+            <div class="space-y-4 flex-shrink-0">
+                <input type="hidden" id="nda-target-product-id">
+                <div>
+                    <label class="block text-xs font-bold text-brand-slate mb-1" data-i18n="Type your full legal name to sign">Type your full legal name to sign</label>
+                    <input type="text" id="nda-signature-name" required class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="e.g. Alice Vance">
+                </div>
+
+                <button onclick="submitDigitalNda()" class="w-full bg-brand-emerald hover:bg-emerald-700 text-white text-sm font-bold py-3.5 rounded-xl transition-all shadow-md shadow-emerald-100 flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-pen-nib"></i> <span data-i18n="Sign NDA to Unlock Details">Agree and Sign NDA</span>
+                </button>
+            </div>
+        </div>
+    </div>
 
         </div>
     </div>
@@ -885,140 +993,7 @@
             alert("Session logged out successfully.");
         }
 
-        // ---------------------------------------------------------------------
-        // SPRINT 2: PROFILE PROFILE KYC & USD WIRE ENGINE (FRONTEND CONTROLLER)
-        // ---------------------------------------------------------------------
-        async function fetchUserProfile() {
-            const token = localStorage.getItem("user_token");
-            if (!token) return;
 
-            try {
-                const res = await fetch(`${API_BASE_URL}/api/portal/profile`, {
-                    headers: { "Authorization": `Bearer ${token}` }
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.detail || "Failed to load user profile.");
-
-                // Set Base Fields
-                document.getElementById('db-email').value = data.email;
-                document.getElementById('db-role').value = data.role;
-                document.getElementById('db-display-name').value = data.displayName;
-                document.getElementById('db-preferred-lang').value = data.preferredLang;
-
-                // Sync Language Selectors
-                document.getElementById('lang-selector').value = data.preferredLang;
-                document.documentElement.lang = data.preferredLang;
-
-                const role = data.role;
-                const tabBankBtn = document.getElementById('tab-btn-bank');
-                const sellerKycPane = document.getElementById('seller-kyc-pane');
-
-                if (role === "seller") {
-                    // Reveal Seller-Specific Controls
-                    tabBankBtn.classList.remove('hidden');
-                    sellerKycPane.classList.remove('hidden');
-
-                    // Set KYC inputs
-                    document.getElementById('db-full-name').value = data.fullName || "";
-                    document.getElementById('db-phone').value = data.phone || "";
-
-                    // Sync KYC Status Card
-                    const kycBadge = document.getElementById('kyc-badge');
-                    const kycCard = document.getElementById('kyc-info-card');
-                    if (data.sellerStatus === "registered") {
-                        kycBadge.className = "text-xs font-black px-2 py-0.5 rounded-md border border-red-200 bg-red-50 text-red-500";
-                        kycBadge.textContent = "KYC INCOMPLETE";
-                        kycCard.className = "p-3 text-xs rounded-xl border border-red-100 bg-red-50/20 text-red-600";
-                        kycCard.innerHTML = `
-                            <strong><i class="fa-solid fa-triangle-exclamation"></i> KYC Verification Required:</strong>
-                            <p class="mt-1">Please enter your Full Legal Name (matching your passport) and verified Phone Number. This data is required prior to listing commercial products on the platform.</p>
-                        `;
-                    } else {
-                        kycBadge.className = "text-xs font-black px-2 py-0.5 rounded-md border border-emerald-200 bg-emerald-50 text-brand-emerald";
-                        kycBadge.textContent = "KYC VERIFIED";
-                        kycCard.className = "p-3 text-xs rounded-xl border border-emerald-100 bg-emerald-50/20 text-brand-emerald";
-                        kycCard.innerHTML = `
-                            <strong><i class="fa-solid fa-circle-check"></i> Profile Approved:</strong>
-                            <p class="mt-1">Your identity metrics have been successfully logged. You are fully authorized to list commercial SaaS and code assets on our directory.</p>
-                        `;
-                    }
-
-                    // Sync USD Bank Wire Coordinates & Badges
-                    document.getElementById('bank-name').value = data.bankWireDetails?.bankName || "";
-                    document.getElementById('bank-swift').value = data.bankWireDetails?.swiftCode || "";
-                    document.getElementById('bank-account').value = data.bankWireDetails?.accountNumber || "";
-                    document.getElementById('bank-acc-name').value = data.bankWireDetails?.accountName || "";
-
-                    const bankBadge = document.getElementById('bank-badge');
-                    const bankCard = document.getElementById('bank-info-card');
-                    if (!data.bankWireComplete) {
-                        bankBadge.className = "text-xs font-black px-2 py-0.5 rounded-md border border-orange-200 bg-orange-50 text-orange-500";
-                        bankBadge.textContent = "NOT SELL READY";
-                        bankCard.className = "p-3 text-xs rounded-xl border border-orange-100 bg-orange-50/20 text-orange-600";
-                        bankCard.innerHTML = `
-                            <strong><i class="fa-solid fa-bell"></i> Sell-Ready Status Gated:</strong>
-                            <p class="mt-1">Linking bank coordinates is optional. However, if a buyer initiates a purchase, you will have a 3-day window to complete this setup. Link your wire details now to bypass all delays and lock in instant sales.</p>
-                        `;
-                    } else {
-                        bankBadge.className = "text-xs font-black px-2 py-0.5 rounded-md border border-emerald-200 bg-emerald-50 text-brand-emerald";
-                        bankBadge.textContent = "SELL READY";
-                        bankCard.className = "p-3 text-xs rounded-xl border border-emerald-100 bg-emerald-50/20 text-brand-emerald";
-                        bankCard.innerHTML = `
-                            <strong><i class="fa-solid fa-shield-halved"></i> Wire Transfers Enabled:</strong>
-                            <p class="mt-1">International banking routing codes verified. Payouts will settle automatically via Escrow.com's split-wires directly into your bank account.</p>
-                        `;
-                    }
-                } else {
-                    // Hide Seller-Specific Controls for Buyers
-                    tabBankBtn.classList.add('hidden');
-                    sellerKycPane.classList.add('hidden');
-                }
-            } catch (error) {
-                console.error(error.message);
-            }
-        }
-
-        async function saveUserProfile() {
-            const token = localStorage.getItem("user_token");
-            if (!token) return;
-
-            const displayName = document.getElementById('db-display-name').value;
-            const preferredLang = document.getElementById('db-preferred-lang').value;
-            const isSeller = localStorage.getItem("user_role") === "seller";
-
-            const payload = {
-                displayName: displayName,
-                preferredLang: preferredLang
-            };
-
-            if (isSeller) {
-                payload.fullName = document.getElementById('db-full-name').value;
-                payload.phone = document.getElementById('db-phone').value;
-            }
-
-            try {
-                const res = await fetch(`${API_BASE_URL}/api/portal/profile`, {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
-                    },
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.detail || "Failed to save profile details.");
-
-                // Update localStorage cached display name
-                localStorage.setItem("user_display_name", data.displayName);
-                
-                // Re-render UI and change languages
-                renderSessionUI();
-                changeLanguage(preferredLang);
-                alert("Profile details saved successfully!");
-            } catch (error) {
-                alert(error.message);
-            }
-        }
 
         // ---------------------------------------------------------------------
         // SPRINT 2 & 3: PROFILE, DASHBOARD & PRODUCT ONBOARDING CONTROLLERS
