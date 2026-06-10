@@ -249,10 +249,10 @@
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
-            <!-- Modal Title -->
-            <div class="text-center space-y-2 mb-6">
-                <h3 class="text-2xl font-black text-brand-navy" data-i18n="Sign Up / Sign In">Sign Up / Sign In</h3>
-                <p class="text-xs text-brand-slate font-semibold" data-i18n="Verify identity securely to explore broker assets.">Verify identity securely to explore broker assets.</p>
+            <!-- Visual Auth Tabs (Friction-Free UX) -->
+            <div class="flex border-b border-slate-100 mb-6 font-bold text-sm text-center">
+                <button type="button" id="modal-tab-login" onclick="setAuthMode('login')" class="flex-1 pb-3 text-slate-400 border-b-2 border-transparent transition-all">Sign In / 登入</button>
+                <button type="button" id="modal-tab-signup" onclick="setAuthMode('signup')" class="flex-1 pb-3 text-brand-emerald border-b-2 border-brand-emerald transition-all">Sign Up / 註冊</button>
             </div>
 
             <!-- Google GSI Sign-In Button Container -->
@@ -417,7 +417,7 @@
             const selectedRole = document.querySelector('input[name="role"]:checked')?.value || 'buyer';
 
             try {
-                const res = await fetch(`${API_BASE_URL}/api/portal/g-verify`, {
+                const res = await fetch(`${API_BASE_URL}/api/portal/callback`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ idToken: idToken, role: selectedRole })
@@ -437,45 +437,68 @@
         // ---------------------------------------------------------------------
         // Modal & Form State Management
         // ---------------------------------------------------------------------
+        function setAuthMode(mode) {
+            const submitBtn = document.getElementById('auth-submit-btn');
+            const toggleLink = document.getElementById('auth-toggle-link');
+            const roleGroup = document.getElementById('role-selection-group');
+            const otpSection = document.getElementById('otp-verification-section');
+            const tabLogin = document.getElementById('modal-tab-login');
+            const tabSignup = document.getElementById('modal-tab-signup');
+
+            if (mode === 'login') {
+                isLoginMode = true;
+                submitBtn.textContent = "Sign In";
+                toggleLink.textContent = "Need an account? Sign Up instead";
+                roleGroup.classList.add('hidden');
+                otpSection.classList.add('hidden');
+                
+                // Highlight Login Tab
+                tabLogin.className = "flex-1 pb-3 text-brand-emerald border-b-2 border-brand-emerald transition-all font-black";
+                tabSignup.className = "flex-1 pb-3 text-slate-400 border-b-2 border-transparent transition-all font-semibold";
+            } else {
+                isLoginMode = false;
+                submitBtn.textContent = i18next.t("Send Verification Code");
+                toggleLink.textContent = "Already have an account? Sign In directly";
+                roleGroup.classList.remove('hidden');
+                
+                // Highlight Signup Tab
+                tabLogin.className = "flex-1 pb-3 text-slate-400 border-b-2 border-transparent transition-all font-semibold";
+                tabSignup.className = "flex-1 pb-3 text-brand-emerald border-b-2 border-brand-emerald transition-all font-black";
+                
+                if (isCodeSent) {
+                    otpSection.classList.remove('hidden');
+                    submitBtn.textContent = i18next.t("Complete Registration");
+                }
+            }
+        }
+
+        function toggleAuthMode() {
+            if (isLoginMode) {
+                setAuthMode('signup');
+            } else {
+                setAuthMode('login');
+            }
+        }
+
         function openAuthModal(preselectedRole = null) {
             document.getElementById('auth-modal').classList.remove('hidden');
+            
             if (preselectedRole) {
+                // If a user clicks a role CTA, we want them to sign up!
+                setAuthMode('signup');
                 const radio = document.querySelector(`input[name="role"][value="${preselectedRole}"]`);
                 if (radio) radio.checked = true;
+            } else {
+                // If they click the header button, default to Sign In!
+                setAuthMode('login');
             }
-            // Trigger Google GSI rendering now that the container is visible!
+            
             setupGoogleGSI();
         }
 
         function closeAuthModal() {
             document.getElementById('auth-modal').classList.add('hidden');
             resetAuthForm();
-        }
-
-        function toggleAuthMode() {
-            isLoginMode = !isLoginMode;
-            const title = document.querySelector('#auth-modal h3');
-            const submitBtn = document.getElementById('auth-submit-btn');
-            const toggleLink = document.getElementById('auth-toggle-link');
-            const roleGroup = document.getElementById('role-selection-group');
-            const otpSection = document.getElementById('otp-verification-section');
-
-            if (isLoginMode) {
-                title.textContent = i18next.t("Sign Up / Sign In");
-                submitBtn.textContent = "Sign In";
-                toggleLink.textContent = "Need an account? Sign Up instead";
-                roleGroup.classList.add('hidden');
-                otpSection.classList.add('hidden');
-            } else {
-                title.textContent = i18next.t("Sign Up / Sign In");
-                submitBtn.textContent = i18next.t("Send Verification Code");
-                toggleLink.textContent = "Already have an account? Sign In directly";
-                roleGroup.classList.remove('hidden');
-                if (isCodeSent) {
-                    otpSection.classList.remove('hidden');
-                    submitBtn.textContent = i18next.t("Complete Registration");
-                }
-            }
         }
 
         function resetAuthForm() {
@@ -486,6 +509,9 @@
             document.getElementById('otp-verification-section').classList.add('hidden');
             document.getElementById('auth-submit-btn').textContent = i18next.t("Send Verification Code");
             document.getElementById('auth-toggle-link').textContent = "Already have an account? Sign In directly";
+            
+            // Reset tab highlights to signup default
+            setAuthMode('signup');
         }
 
         // ---------------------------------------------------------------------
