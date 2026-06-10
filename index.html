@@ -78,27 +78,148 @@
     <!-- =========================================================================
          HERO CENTERPIECE SECTION
          ========================================================================= -->
-    <main class="flex-grow flex flex-col justify-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div class="text-center max-w-3xl mx-auto space-y-8">
-            <!-- Platform Brand Slogan -->
-            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-brand-navy tracking-tight leading-none" data-i18n="Match with global software assets seamlessly under Zero-Funds broker trust.">
-                Match with global software assets seamlessly under Zero-Funds broker trust.
-            </h1>
-            <p class="text-brand-slate text-lg sm:text-xl font-medium" data-i18n="Connect developers with accredited buyers globally. Standard NDAs, escrow splits, and private chats.">
-                Connect developers with accredited buyers globally. Standard NDAs, escrow splits, and private chats.
-            </p>
+    <div id="hero-public-section" class="flex-grow flex flex-col justify-center w-full">
+        <main class="flex-grow flex flex-col justify-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div class="text-center max-w-3xl mx-auto space-y-8">
+                <!-- Platform Brand Slogan -->
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-brand-navy tracking-tight leading-none" data-i18n="Match with global software assets seamlessly under Zero-Funds broker trust.">
+                    Match with global software assets seamlessly under Zero-Funds broker trust.
+                </h1>
+                <p class="text-brand-slate text-lg sm:text-xl font-medium" data-i18n="Connect developers with accredited buyers globally. Standard NDAs, escrow splits, and private chats.">
+                    Connect developers with accredited buyers globally. Standard NDAs, escrow splits, and private chats.
+                </p>
 
-            <!-- Dual Role CTA Registration Gates -->
-            <div class="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-6 pt-4">
-                <button onclick="openAuthModal('buyer')" class="w-full sm:w-56 bg-brand-emerald hover:bg-emerald-700 text-white text-lg font-bold py-4 rounded-xl transition-all shadow-lg shadow-emerald-100 flex items-center justify-center gap-2 hover:scale-[1.02] transform">
-                    <i class="fa-solid fa-chart-line"></i> <span data-i18n="Buyer">Buyer</span>
-                </button>
-                <button onclick="openAuthModal('seller')" class="w-full sm:w-56 bg-brand-navy hover:bg-slate-800 text-white text-lg font-bold py-4 rounded-xl transition-all shadow-lg shadow-slate-200 flex items-center justify-center gap-2 hover:scale-[1.02] transform">
-                    <i class="fa-solid fa-code"></i> <span data-i18n="Seller">Seller</span>
+                <!-- Dual Role CTA Registration Gates -->
+                <div class="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-6 pt-4">
+                    <button onclick="openAuthModal('buyer')" class="w-full sm:w-56 bg-brand-emerald hover:bg-emerald-700 text-white text-lg font-bold py-4 rounded-xl transition-all shadow-lg shadow-emerald-100 flex items-center justify-center gap-2 hover:scale-[1.02] transform">
+                        <i class="fa-solid fa-chart-line"></i> <span data-i18n="Buyer">Buyer</span>
+                    </button>
+                    <button onclick="openAuthModal('seller')" class="w-full sm:w-56 bg-brand-navy hover:bg-slate-800 text-white text-lg font-bold py-4 rounded-xl transition-all shadow-lg shadow-slate-200 flex items-center justify-center gap-2 hover:scale-[1.02] transform">
+                        <i class="fa-solid fa-code"></i> <span data-i18n="Seller">Seller</span>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- =========================================================================
+         DASHBOARD CONSOLE (SPRINT 2: KYC & WIRE SETTINGS)
+         ========================================================================= -->
+    <div id="dashboard-section" class="hidden max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow flex flex-col md:flex-row gap-8">
+        <!-- Sidebar Navigation -->
+        <aside class="w-full md:w-64 flex-shrink-0 flex flex-row md:flex-col gap-2 border-b md:border-b-0 md:border-r border-slate-100 pb-4 md:pb-0 md:pr-6 text-sm font-semibold text-brand-slate">
+            <button id="tab-btn-profile" onclick="switchTab('dashboard-profile')" class="flex-1 md:flex-none text-left px-4 py-3 rounded-xl transition-all bg-emerald-50 text-brand-emerald flex items-center gap-3">
+                <i class="fa-solid fa-user-gear"></i> <span data-i18n="KYC Settings">KYC Settings</span>
+            </button>
+            <button id="tab-btn-bank" onclick="switchTab('dashboard-bank')" class="flex-1 md:flex-none text-left px-4 py-3 rounded-xl transition-all hover:bg-slate-50 flex items-center gap-3 hidden">
+                <i class="fa-solid fa-building-columns"></i> <span data-i18n="USD Bank Wire">USD Bank Wire</span>
+            </button>
+        </aside>
+
+        <!-- Main Settings Panel -->
+        <div class="flex-grow space-y-8 bg-white border border-slate-100 p-6 sm:p-8 rounded-2xl shadow-sm">
+            
+            <!-- SUB-VIEW: KYC Profile Settings -->
+            <div id="sub-view-profile" class="space-y-6">
+                <div class="border-b border-slate-100 pb-4">
+                    <h2 class="text-xl font-black text-brand-navy" data-i18n="Account & KYC Profile Settings">Account & KYC Profile Settings</h2>
+                    <p class="text-xs text-brand-slate font-medium" data-i18n="Update your display attributes and verify your legal credentials.">Update your display attributes and verify your legal credentials.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-brand-slate mb-1" data-i18n="Email (Readonly)">Email (Readonly)</label>
+                        <input type="text" id="db-email" readonly class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-400 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-brand-slate mb-1" data-i18n="Selected Role (Readonly)">Selected Role (Readonly)</label>
+                        <input type="text" id="db-role" readonly class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-400 focus:outline-none capitalize">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-brand-slate mb-1" data-i18n="Display Name">Display Name</label>
+                        <input type="text" id="db-display-name" class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-brand-slate mb-1" data-i18n="Preferred Language">Preferred Language</label>
+                        <select id="db-preferred-lang" class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy">
+                            <option value="en">English (Default)</option>
+                            <option value="zh_TW">繁體中文</option>
+                            <option value="ja_JP">日本語</option>
+                            <option value="ko_KR">한국어</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Personal KYC Fields (For Sellers) -->
+                <div id="seller-kyc-pane" class="hidden space-y-4 pt-4 border-t border-slate-100">
+                    <div class="flex items-center justify-between">
+                        <h4 class="text-sm font-black text-brand-navy" data-i18n="Seller KYC Verification Requirements">Seller KYC Verification Requirements</h4>
+                        <span id="kyc-badge" class="text-xs font-black px-2 py-0.5 rounded-md border"></span>
+                    </div>
+                    
+                    <div id="kyc-info-card" class="p-3 text-xs rounded-xl border"></div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-brand-slate mb-1" data-i18n="Full Legal Name">Full Legal Name</label>
+                            <input type="text" id="db-full-name" class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="Lin Chao-Chen">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-brand-slate mb-1" data-i18n="Phone Number">Phone Number</label>
+                            <input type="text" id="db-phone" class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="+886912345678">
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="saveUserProfile()" class="bg-brand-emerald hover:bg-emerald-700 text-white text-sm font-bold px-6 py-3 rounded-xl transition-all shadow-md shadow-emerald-100 flex items-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> <span data-i18n="Save Profile Details">Save Profile Details</span>
                 </button>
             </div>
+
+            <!-- SUB-VIEW: USD Bank Wire Setup (Seller Only) -->
+            <div id="sub-view-bank" class="hidden space-y-6">
+                <div class="border-b border-slate-100 pb-4 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-black text-brand-navy" data-i18n="USD Foreign-Currency Bank Wire Setup">USD Foreign-Currency Bank Wire Setup</h2>
+                        <p class="text-xs text-brand-slate font-medium" data-i18n="Complete wire details to become fully Sell Ready and receive instant payouts.">Complete wire details to become fully Sell Ready and receive instant payouts.</p>
+                    </div>
+                    <span id="bank-badge" class="text-xs font-black px-2 py-0.5 rounded-md border"></span>
+                </div>
+
+                <div id="bank-info-card" class="p-3 text-xs rounded-xl border"></div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-brand-slate mb-1" data-i18n="Bank Name">Bank Name</label>
+                        <input type="text" id="bank-name" class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="Cathay United Bank">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-brand-slate mb-1" data-i18n="SWIFT Code">SWIFT Code</label>
+                        <input type="text" id="bank-swift" class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="BKCHTWTP">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-brand-slate mb-1" data-i18n="Account Number">Account Number</label>
+                        <input type="text" id="bank-account" class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="123456789012">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-brand-slate mb-1" data-i18n="Account Legal Name">Account Legal Name</label>
+                        <input type="text" id="bank-acc-name" class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="Lin Chao-Chen">
+                    </div>
+                </div>
+
+                <button onclick="saveBankWireDetails()" class="bg-brand-navy hover:bg-slate-800 text-white text-sm font-bold px-6 py-3 rounded-xl transition-all shadow-md shadow-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved"></i> <span data-i18n="Activate Sell-Ready Banking">Activate Sell-Ready Banking</span>
+                </button>
+            </div>
+
         </div>
-    </main>
+    </div>
 
     <!-- =========================================================================
          FOOTER LEGAL NAV LINKS
@@ -443,7 +564,7 @@
         }
 
         // ---------------------------------------------------------------------
-        // Portable Session Management
+        // Portable Session & Dashboard Management (Sprint 2 Core)
         // ---------------------------------------------------------------------
         function saveSession(data) {
             localStorage.setItem("user_token", data.token);
@@ -464,6 +585,7 @@
             const displayName = localStorage.getItem("user_display_name");
             const role = localStorage.getItem("user_role").toUpperCase();
 
+            // Render Header logged-in box
             container.innerHTML = `
                 <div class="flex items-center space-x-3 bg-brand-light px-3 py-1.5 rounded-lg border border-slate-200">
                     <span class="text-xs font-black text-brand-emerald tracking-wide bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">${role}</span>
@@ -471,6 +593,13 @@
                     <button onclick="logoutSession()" class="text-brand-slate hover:text-red-500 transition-colors text-sm font-semibold pl-2 border-l border-slate-200"><i class="fa-solid fa-right-from-bracket"></i></button>
                 </div>
             `;
+
+            // Toggle centerpiece layouts
+            document.getElementById('hero-public-section').classList.add('hidden');
+            document.getElementById('dashboard-section').classList.remove('hidden');
+
+            // Fetch full verified profile parameters
+            fetchUserProfile();
         }
 
         function logoutSession() {
@@ -479,8 +608,197 @@
             container.innerHTML = `
                 <button onclick="openAuthModal()" class="bg-brand-navy hover:bg-slate-800 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all shadow-md shadow-slate-100" data-i18n="Sign Up / Sign In">Sign Up / Sign In</button>
             `;
+            
+            // Revert back to landing page centerpiece
+            document.getElementById('hero-public-section').classList.remove('hidden');
+            document.getElementById('dashboard-section').classList.add('hidden');
+            
             applyTranslations();
             alert("Session logged out successfully.");
+        }
+
+        // ---------------------------------------------------------------------
+        // SPRINT 2: PROFILE PROFILE KYC & USD WIRE ENGINE (FRONTEND CONTROLLER)
+        // ---------------------------------------------------------------------
+        async function fetchUserProfile() {
+            const token = localStorage.getItem("user_token");
+            if (!token) return;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/portal/profile`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || "Failed to load user profile.");
+
+                // Set Base Fields
+                document.getElementById('db-email').value = data.email;
+                document.getElementById('db-role').value = data.role;
+                document.getElementById('db-display-name').value = data.displayName;
+                document.getElementById('db-preferred-lang').value = data.preferredLang;
+
+                // Sync Language Selectors
+                document.getElementById('lang-selector').value = data.preferredLang;
+                document.documentElement.lang = data.preferredLang;
+
+                const role = data.role;
+                const tabBankBtn = document.getElementById('tab-btn-bank');
+                const sellerKycPane = document.getElementById('seller-kyc-pane');
+
+                if (role === "seller") {
+                    // Reveal Seller-Specific Controls
+                    tabBankBtn.classList.remove('hidden');
+                    sellerKycPane.classList.remove('hidden');
+
+                    // Set KYC inputs
+                    document.getElementById('db-full-name').value = data.fullName || "";
+                    document.getElementById('db-phone').value = data.phone || "";
+
+                    // Sync KYC Status Card
+                    const kycBadge = document.getElementById('kyc-badge');
+                    const kycCard = document.getElementById('kyc-info-card');
+                    if (data.sellerStatus === "registered") {
+                        kycBadge.className = "text-xs font-black px-2 py-0.5 rounded-md border border-red-200 bg-red-50 text-red-500";
+                        kycBadge.textContent = "KYC INCOMPLETE";
+                        kycCard.className = "p-3 text-xs rounded-xl border border-red-100 bg-red-50/20 text-red-600";
+                        kycCard.innerHTML = `
+                            <strong><i class="fa-solid fa-triangle-exclamation"></i> KYC Verification Required:</strong>
+                            <p class="mt-1">Please enter your Full Legal Name (matching your passport) and verified Phone Number. This data is required prior to listing commercial products on the platform.</p>
+                        `;
+                    } else {
+                        kycBadge.className = "text-xs font-black px-2 py-0.5 rounded-md border border-emerald-200 bg-emerald-50 text-brand-emerald";
+                        kycBadge.textContent = "KYC VERIFIED";
+                        kycCard.className = "p-3 text-xs rounded-xl border border-emerald-100 bg-emerald-50/20 text-brand-emerald";
+                        kycCard.innerHTML = `
+                            <strong><i class="fa-solid fa-circle-check"></i> Profile Approved:</strong>
+                            <p class="mt-1">Your identity metrics have been successfully logged. You are fully authorized to list commercial SaaS and code assets on our directory.</p>
+                        `;
+                    }
+
+                    // Sync USD Bank Wire Coordinates & Badges
+                    document.getElementById('bank-name').value = data.bankWireDetails?.bankName || "";
+                    document.getElementById('bank-swift').value = data.bankWireDetails?.swiftCode || "";
+                    document.getElementById('bank-account').value = data.bankWireDetails?.accountNumber || "";
+                    document.getElementById('bank-acc-name').value = data.bankWireDetails?.accountName || "";
+
+                    const bankBadge = document.getElementById('bank-badge');
+                    const bankCard = document.getElementById('bank-info-card');
+                    if (!data.bankWireComplete) {
+                        bankBadge.className = "text-xs font-black px-2 py-0.5 rounded-md border border-orange-200 bg-orange-50 text-orange-500";
+                        bankBadge.textContent = "NOT SELL READY";
+                        bankCard.className = "p-3 text-xs rounded-xl border border-orange-100 bg-orange-50/20 text-orange-600";
+                        bankCard.innerHTML = `
+                            <strong><i class="fa-solid fa-bell"></i> Sell-Ready Status Gated:</strong>
+                            <p class="mt-1">Linking bank coordinates is optional. However, if a buyer initiates a purchase, you will have a 3-day window to complete this setup. Link your wire details now to bypass all delays and lock in instant sales.</p>
+                        `;
+                    } else {
+                        bankBadge.className = "text-xs font-black px-2 py-0.5 rounded-md border border-emerald-200 bg-emerald-50 text-brand-emerald";
+                        bankBadge.textContent = "SELL READY";
+                        bankCard.className = "p-3 text-xs rounded-xl border border-emerald-100 bg-emerald-50/20 text-brand-emerald";
+                        bankCard.innerHTML = `
+                            <strong><i class="fa-solid fa-shield-halved"></i> Wire Transfers Enabled:</strong>
+                            <p class="mt-1">International banking routing codes verified. Payouts will settle automatically via Escrow.com's split-wires directly into your bank account.</p>
+                        `;
+                    }
+                } else {
+                    // Hide Seller-Specific Controls for Buyers
+                    tabBankBtn.classList.add('hidden');
+                    sellerKycPane.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error(error.message);
+            }
+        }
+
+        async function saveUserProfile() {
+            const token = localStorage.getItem("user_token");
+            if (!token) return;
+
+            const displayName = document.getElementById('db-display-name').value;
+            const preferredLang = document.getElementById('db-preferred-lang').value;
+            const isSeller = localStorage.getItem("user_role") === "seller";
+
+            const payload = {
+                displayName: displayName,
+                preferredLang: preferredLang
+            };
+
+            if (isSeller) {
+                payload.fullName = document.getElementById('db-full-name').value;
+                payload.phone = document.getElementById('db-phone').value;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/portal/profile`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || "Failed to save profile details.");
+
+                // Update localStorage cached display name
+                localStorage.setItem("user_display_name", data.displayName);
+                
+                // Re-render UI and change languages
+                renderSessionUI();
+                changeLanguage(preferredLang);
+                alert("Profile details saved successfully!");
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        async function saveBankWireDetails() {
+            const token = localStorage.getItem("user_token");
+            if (!token) return;
+
+            const payload = {
+                bankName: document.getElementById('bank-name').value,
+                swiftCode: document.getElementById('bank-swift').value,
+                accountNumber: document.getElementById('bank-account').value,
+                accountName: document.getElementById('bank-acc-name').value
+            };
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/portal/bank-details`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || "Failed to save wire coordinates.");
+
+                fetchUserProfile();
+                alert("USD bank wire coordinates verified and activated successfully! You are now Sell Ready.");
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        function switchTab(tabId) {
+            const profileTab = document.getElementById('sub-view-profile');
+            const bankTab = document.getElementById('sub-view-bank');
+            const btnProfile = document.getElementById('tab-btn-profile');
+            const btnBank = document.getElementById('tab-btn-bank');
+
+            if (tabId === 'dashboard-profile') {
+                profileTab.classList.remove('hidden');
+                bankTab.classList.add('hidden');
+                btnProfile.className = "flex-1 md:flex-none text-left px-4 py-3 rounded-xl transition-all bg-emerald-50 text-brand-emerald flex items-center gap-3";
+                btnBank.className = "flex-1 md:flex-none text-left px-4 py-3 rounded-xl transition-all hover:bg-slate-50 flex items-center gap-3";
+            } else {
+                profileTab.classList.add('hidden');
+                bankTab.classList.remove('hidden');
+                btnProfile.className = "flex-1 md:flex-none text-left px-4 py-3 rounded-xl transition-all hover:bg-slate-50 flex items-center gap-3";
+                btnBank.className = "flex-1 md:flex-none text-left px-4 py-3 rounded-xl transition-all bg-emerald-50 text-brand-emerald flex items-center gap-3";
+            }
         }
     </script>
 </body>
