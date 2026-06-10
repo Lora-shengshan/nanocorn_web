@@ -1023,13 +1023,15 @@
                 const tabBankBtn = document.getElementById('tab-btn-bank');
                 const tabProductsBtn = document.getElementById('tab-btn-products');
                 const tabAddProdBtn = document.getElementById('tab-btn-add-product');
+                const tabMarketBtn = document.getElementById('tab-btn-market');
                 const tabAdminBtn = document.getElementById('tab-btn-admin');
                 const sellerKycPane = document.getElementById('seller-kyc-pane');
 
-                // Initialize visibility overrides
+                // Initialize visibility overrides (Reset state)
                 tabBankBtn.classList.add('hidden');
                 tabProductsBtn.classList.add('hidden');
                 tabAddProdBtn.classList.add('hidden');
+                tabMarketBtn.classList.add('hidden');
                 tabAdminBtn.classList.add('hidden');
                 sellerKycPane.classList.add('hidden');
 
@@ -1094,6 +1096,10 @@
                     // Pre-fetch Seller Listings
                     fetchMyProducts();
 
+                } else if (role === "buyer") {
+                    // Reveal Buyer Marketplace Tab
+                    tabMarketBtn.classList.remove('hidden');
+                    fetchMarketplaceCatalog();
                 } else if (role === "admin") {
                     // Reveal Admin Vetting Control
                     tabAdminBtn.classList.remove('hidden');
