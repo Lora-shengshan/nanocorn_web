@@ -123,6 +123,15 @@
             <button id="tab-btn-bank" onclick="switchTab('dashboard-bank')" class="flex-1 md:flex-none text-left px-4 py-3 rounded-xl transition-all hover:bg-slate-50 flex items-center gap-3 hidden">
                 <i class="fa-solid fa-building-columns"></i> <span data-i18n="USD Bank Wire">USD Bank Wire</span>
             </button>
+            <button id="tab-btn-products" onclick="switchTab('dashboard-products')" class="flex-1 md:flex-none text-left px-4 py-3 rounded-xl transition-all hover:bg-slate-50 flex items-center gap-3 hidden">
+                <i class="fa-solid fa-cubes"></i> <span data-i18n="My Products">My Products</span>
+            </button>
+            <button id="tab-btn-add-product" onclick="switchTab('dashboard-add-product')" class="flex-1 md:flex-none text-left px-4 py-3 rounded-xl transition-all hover:bg-slate-50 flex items-center gap-3 hidden">
+                <i class="fa-solid fa-circle-plus"></i> <span data-i18n="Add Product">Add Product</span>
+            </button>
+            <button id="tab-btn-admin" onclick="switchTab('dashboard-admin')" class="flex-1 md:flex-none text-left px-4 py-3 rounded-xl transition-all hover:bg-slate-50 flex items-center gap-3 hidden">
+                <i class="fa-solid fa-user-shield"></i> <span data-i18n="Admin Vetting">Admin Vetting</span>
+            </button>
         </aside>
 
         <!-- Main Settings Panel -->
@@ -225,6 +234,230 @@
                 <button onclick="saveBankWireDetails()" class="bg-brand-navy hover:bg-slate-800 text-white text-sm font-bold px-6 py-3 rounded-xl transition-all shadow-md shadow-slate-100 flex items-center gap-2">
                     <i class="fa-solid fa-shield-halved"></i> <span data-i18n="Activate Sell-Ready Banking">Activate Sell-Ready Banking</span>
                 </button>
+            </div>
+
+            <!-- SUB-VIEW: My Products (Seller Only) -->
+            <div id="sub-view-products" class="hidden space-y-6">
+                <div class="border-b border-slate-100 pb-4 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-black text-brand-navy" data-i18n="My Products">My Products</h2>
+                        <p class="text-xs text-brand-slate font-medium" data-i18n="Manage your listed commercial software products and track their vetting statuses.">Manage your listed commercial software products and track their vetting statuses.</p>
+                    </div>
+                    <button onclick="switchTab('dashboard-add-product')" class="bg-brand-emerald hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition-all shadow-md shadow-emerald-100 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-plus"></i> <span data-i18n="List New Product">List New Product</span>
+                    </button>
+                </div>
+
+                <div id="my-products-list" class="space-y-4">
+                    <!-- Dynamic Product List Cards go here -->
+                </div>
+            </div>
+
+            <!-- SUB-VIEW: Add Product Listing Form (Seller Only) -->
+            <div id="sub-view-add-product" class="hidden space-y-6">
+                <div class="border-b border-slate-100 pb-4 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-black text-brand-navy" data-i18n="Add Product">Add Product</h2>
+                        <p class="text-xs text-brand-slate font-medium" data-i18n="Create a new secure, de-identified commercial product listing.">Create a new secure, de-identified commercial product listing.</p>
+                    </div>
+                    <button onclick="switchTab('dashboard-products')" class="text-brand-slate hover:text-brand-navy text-xs font-bold px-4 py-2 rounded-lg transition-all border border-slate-200 bg-brand-light flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-left"></i> <span data-i18n="Back">Back</span>
+                    </button>
+                </div>
+
+                <form id="add-product-form" onsubmit="submitProductListing(event)" class="space-y-6">
+                    <!-- Step 1: Product Classification -->
+                    <div class="space-y-4">
+                        <h3 class="text-sm font-black text-brand-navy border-b border-slate-100 pb-2"><i class="fa-solid fa-tag text-brand-emerald"></i> Step 1: Product Classification</h3>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-brand-slate mb-1">Anonymized Title ( 去識別化展示標題 )</label>
+                                <input type="text" id="add-prod-title" required class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="e.g. Anonymized AI Video Generator for Taiwan E-Commerce">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-brand-slate mb-1">Asking Price ( 期望出售價格 in USD )</label>
+                                <input type="number" id="add-prod-price" required class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="e.g. 5000">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-brand-slate mb-2">Product Type ( 產品類型 - Multi-check )</label>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-semibold text-brand-slate">
+                                <label class="flex items-center gap-2 border border-slate-200 rounded-lg p-3 cursor-pointer hover:border-brand-emerald transition-all has-[:checked]:bg-emerald-50/10">
+                                    <input type="checkbox" name="prod-type" value="Web Application / SaaS" class="accent-brand-emerald"> <span>SaaS</span>
+                                </label>
+                                <label class="flex items-center gap-2 border border-slate-200 rounded-lg p-3 cursor-pointer hover:border-brand-emerald transition-all has-[:checked]:bg-emerald-50/10">
+                                    <input type="checkbox" name="prod-type" value="iOS Application" class="accent-brand-emerald"> <span>iOS App</span>
+                                </label>
+                                <label class="flex items-center gap-2 border border-slate-200 rounded-lg p-3 cursor-pointer hover:border-brand-emerald transition-all has-[:checked]:bg-emerald-50/10">
+                                    <input type="checkbox" name="prod-type" value="Android Application" class="accent-brand-emerald"> <span>Android App</span>
+                                </label>
+                                <label class="flex items-center gap-2 border border-slate-200 rounded-lg p-3 cursor-pointer hover:border-brand-emerald transition-all has-[:checked]:bg-emerald-50/10">
+                                    <input type="checkbox" name="prod-type" value="Chrome / Browser Extension" class="accent-brand-emerald"> <span>Extension</span>
+                                </label>
+                                <label class="flex items-center gap-2 border border-slate-200 rounded-lg p-3 cursor-pointer hover:border-brand-emerald transition-all has-[:checked]:bg-emerald-50/10">
+                                    <input type="checkbox" name="prod-type" value="Desktop Software (Mac/Windows)" class="accent-brand-emerald"> <span>Desktop App</span>
+                                </label>
+                                <label class="flex items-center gap-2 border border-slate-200 rounded-lg p-3 cursor-pointer hover:border-brand-emerald transition-all has-[:checked]:bg-emerald-50/10">
+                                    <input type="checkbox" name="prod-type" value="WordPress Plugin / Theme" class="accent-brand-emerald"> <span>WP Plugin</span>
+                                </label>
+                                <label class="flex items-center gap-2 border border-slate-200 rounded-lg p-3 cursor-pointer hover:border-brand-emerald transition-all has-[:checked]:bg-emerald-50/10">
+                                    <input type="checkbox" name="prod-type" value="Domain Name Only" class="accent-brand-emerald"> <span>Domain Only</span>
+                                </label>
+                                <label class="flex items-center gap-2 border border-slate-200 rounded-lg p-3 cursor-pointer hover:border-brand-emerald transition-all has-[:checked]:bg-emerald-50/10">
+                                    <input type="checkbox" name="prod-type" value="Utility Script / Core Algorithm" class="accent-brand-emerald"> <span>Script/API</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-brand-slate mb-1">Technology Stack ( 技術棧 - Comma separated )</label>
+                                <input type="text" id="add-prod-tech" required class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="e.g. Python, FastAPI, React">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-brand-slate mb-1">Metrics Source ( 數據來源 )</label>
+                                <input type="text" id="add-prod-source" readonly value="manual" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-400 focus:outline-none">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-brand-slate mb-1">Product Description ( 產品詳細描述 )</label>
+                            <textarea id="add-prod-desc" required rows="4" class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="Detail your product features, client base, and hosting structures..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Financial Metrics & Pre-Revenue Toggle -->
+                    <div class="space-y-4 pt-4 border-t border-slate-100">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                            <h3 class="text-sm font-black text-brand-navy"><i class="fa-solid fa-coins text-brand-emerald"></i> Step 2: Financial Metrics</h3>
+                            <!-- Pre-Revenue Toggle Switch -->
+                            <label class="flex items-center gap-2 cursor-pointer text-xs font-black text-brand-slate">
+                                <span>Has Financial Revenue? (是否已有營業收入?)</span>
+                                <input type="checkbox" id="add-prod-has-revenue" checked onchange="toggleRevenueFields(this.checked)" class="w-10 h-5 bg-slate-200 rounded-full appearance-none checked:bg-brand-emerald transition-all relative before:content-[''] before:w-5 before:h-5 before:bg-white before:rounded-full before:absolute before:left-0 checked:before:left-5 before:transition-all before:shadow">
+                            </label>
+                        </div>
+
+                        <!-- Collapsible Financial Fields -->
+                        <div id="revenue-fields-group" class="grid grid-cols-2 sm:grid-cols-5 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-brand-slate mb-1">MRR (Monthly, USD)</label>
+                                <input type="number" id="add-prod-mrr" value="0" class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-brand-slate mb-1">ARR (Annual, USD)</label>
+                                <input type="number" id="add-prod-arr" value="0" class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-brand-slate mb-1">Annual Rev (USD)</label>
+                                <input type="number" id="add-prod-revenue" value="0" class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-brand-slate mb-1">Annual Profit (USD)</label>
+                                <input type="number" id="add-prod-profit" value="0" class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-brand-slate mb-1">EBITDA (USD)</label>
+                                <input type="number" id="add-prod-ebitda" value="0" class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Private Asset Identities & M&A Transfer Details -->
+                    <div class="space-y-4 pt-4 border-t border-slate-100">
+                        <h3 class="text-sm font-black text-brand-navy border-b border-slate-100 pb-2"><i class="fa-solid fa-lock text-brand-emerald"></i> Step 3: Private Identifiers & Transfer Terms</h3>
+                        <p class="text-[10px] text-slate-400 font-semibold mt-1">Note: Real names, URLs, and specific transfer methods remain strictly encrypted and hidden. They are revealed only to accredited Buyers who execute your product's virtual NDA.</p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-brand-slate mb-1">Real Product Name ( 真實產品名稱 - Hidden )</label>
+                                <input type="text" id="add-prod-real-name" required class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="e.g. MarkDowner Mac">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-brand-slate mb-1">Real Product URL ( 真實產品連結 - Hidden )</label>
+                                <input type="url" id="add-prod-real-url" required class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="e.g. https://markdownermac.com">
+                            </div>
+                        </div>
+
+                        <!-- M&A Handover Terms -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-brand-slate mb-1">Domain Transfer Method ( 網域所有權移轉方式 )</label>
+                                <input type="text" id="add-prod-trans-domain" required class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="e.g. Domain push to buyer's Namecheap account">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-brand-slate mb-1">Codebase Transfer Method ( 程式碼移轉方式 )</label>
+                                <input type="text" id="add-prod-trans-code" required class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="e.g. Full GitHub repository administrative transfer">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-brand-slate mb-1">Hosting/Infrastructure Handover ( 雲端主機移轉方式 )</label>
+                                <input type="text" id="add-prod-trans-hosting" required class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="e.g. Migration of Vercel keys and Firebase settings">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-brand-slate mb-1">Customer Database Migration ( 用戶資料庫移轉方式 )</label>
+                                <input type="text" id="add-prod-trans-db" required class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="e.g. Anonymized PostgreSQL database CSV export">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-brand-slate mb-1">Payment Gateway Handover ( 金流帳戶移轉方式 )</label>
+                                <input type="text" id="add-prod-trans-gateway" required class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="e.g. Stripe custom company account ownership transfer">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-brand-slate mb-1">Estimated Transfer Days ( 預估移轉時間 in Days )</label>
+                                <input type="number" id="add-prod-trans-days" required class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="e.g. 5">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-brand-slate mb-1">Post-Sale Support Offered ( 售後技術協助承諾 )</label>
+                            <textarea id="add-prod-trans-support" required rows="2" class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="e.g. 30 days of email assistance + 2 Zoom codebase review sessions"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Product Brand Logo Upload -->
+                    <div class="space-y-4 pt-4 border-t border-slate-100">
+                        <h3 class="text-sm font-black text-brand-navy border-b border-slate-100 pb-2"><i class="fa-solid fa-image text-brand-emerald"></i> Step 4: Product Brand Logo</h3>
+                        
+                        <div class="flex items-center gap-4">
+                            <!-- Logo Image Selector -->
+                            <div class="flex-grow">
+                                <label class="block text-xs font-bold text-brand-slate mb-1">Select Logo File ( 選擇產品標誌圖片 )</label>
+                                <input type="file" id="prod-logo-file" accept="image/*" onchange="uploadProductLogoBinary(this.files[0])" class="w-full text-xs font-semibold text-brand-slate border border-slate-200 rounded-xl p-3 bg-brand-light cursor-pointer">
+                            </div>
+                            
+                            <!-- Thumbnail Preview Card -->
+                            <div id="logo-preview-card" class="w-20 h-20 border border-slate-200 rounded-xl flex items-center justify-center bg-brand-light overflow-hidden flex-shrink-0">
+                                <i class="fa-solid fa-image text-2xl text-slate-300" id="logo-placeholder-icon"></i>
+                                <img id="logo-preview-img" class="hidden w-full h-full object-cover">
+                            </div>
+                        </div>
+                        
+                        <!-- Hidden Input holding GCS public logo URL -->
+                        <input type="hidden" id="db-product-logo" required>
+                    </div>
+
+                    <button type="submit" class="w-full bg-brand-emerald hover:bg-emerald-700 text-white text-sm font-bold py-4 rounded-xl transition-all shadow-md shadow-emerald-100 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> <span>Submit Product for Vetting</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- SUB-VIEW: Admin Vetting Dashboard (Admin Only) -->
+            <div id="sub-view-admin" class="hidden space-y-6">
+                <div class="border-b border-slate-100 pb-4">
+                    <h2 class="text-xl font-black text-brand-navy" data-i18n="Admin Vetting Queue">Admin Vetting Queue</h2>
+                    <p class="text-xs text-brand-slate font-medium" data-i18n="Review pending commercial listings and execute moderation actions.">Review pending commercial listings and execute moderation actions.</p>
+                </div>
+
+                <div id="admin-pending-queue" class="space-y-6">
+                    <!-- Dynamic Admin Moderation Cards go here -->
+                </div>
             </div>
 
         </div>
@@ -787,6 +1020,154 @@
             }
         }
 
+        // ---------------------------------------------------------------------
+        // SPRINT 2 & 3: PROFILE, DASHBOARD & PRODUCT ONBOARDING CONTROLLERS
+        // ---------------------------------------------------------------------
+        async function fetchUserProfile() {
+            const token = localStorage.getItem("user_token");
+            if (!token) return;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/portal/profile`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || "Failed to load user profile.");
+
+                // Set Base Fields
+                document.getElementById('db-email').value = data.email;
+                document.getElementById('db-role').value = data.role;
+                document.getElementById('db-display-name').value = data.displayName;
+                document.getElementById('db-preferred-lang').value = data.preferredLang;
+
+                // Sync Language Selectors
+                document.getElementById('lang-selector').value = data.preferredLang;
+                document.documentElement.lang = data.preferredLang;
+
+                const role = data.role;
+                const tabBankBtn = document.getElementById('tab-btn-bank');
+                const tabProductsBtn = document.getElementById('tab-btn-products');
+                const tabAddProdBtn = document.getElementById('tab-btn-add-product');
+                const tabAdminBtn = document.getElementById('tab-btn-admin');
+                const sellerKycPane = document.getElementById('seller-kyc-pane');
+
+                // Initialize visibility overrides
+                tabBankBtn.classList.add('hidden');
+                tabProductsBtn.classList.add('hidden');
+                tabAddProdBtn.classList.add('hidden');
+                tabAdminBtn.classList.add('hidden');
+                sellerKycPane.classList.add('hidden');
+
+                if (role === "seller") {
+                    // Reveal Seller-Specific Controls
+                    tabBankBtn.classList.remove('hidden');
+                    tabProductsBtn.classList.remove('hidden');
+                    tabAddProdBtn.classList.remove('hidden');
+                    sellerKycPane.classList.remove('hidden');
+
+                    // Set KYC inputs
+                    document.getElementById('db-full-name').value = data.fullName || "";
+                    document.getElementById('db-phone').value = data.phone || "";
+
+                    // Sync KYC Status Card & Badges
+                    const kycBadge = document.getElementById('kyc-badge');
+                    const kycCard = document.getElementById('kyc-info-card');
+                    if (data.sellerStatus === "registered") {
+                        kycBadge.className = "text-xs font-black px-2 py-0.5 rounded-md border border-red-200 bg-red-50 text-red-500";
+                        kycBadge.textContent = "KYC INCOMPLETE";
+                        kycCard.className = "p-3 text-xs rounded-xl border border-red-100 bg-red-50/20 text-red-600";
+                        kycCard.innerHTML = `
+                            <strong><i class="fa-solid fa-triangle-exclamation"></i> KYC Verification Required:</strong>
+                            <p class="mt-1">Please enter your Full Legal Name (matching your passport) and verified Phone Number. This data is required prior to listing commercial products on the platform.</p>
+                        `;
+                    } else {
+                        kycBadge.className = "text-xs font-black px-2 py-0.5 rounded-md border border-emerald-200 bg-emerald-50 text-brand-emerald";
+                        kycBadge.textContent = "KYC VERIFIED";
+                        kycCard.className = "p-3 text-xs rounded-xl border border-emerald-100 bg-emerald-50/20 text-brand-emerald";
+                        kycCard.innerHTML = `
+                            <strong><i class="fa-solid fa-circle-check"></i> Profile Approved:</strong>
+                            <p class="mt-1">Your identity metrics have been successfully logged. You are fully authorized to list commercial SaaS and code assets on our directory.</p>
+                        `;
+                    }
+
+                    // Sync USD Bank Wire Coordinates & Badges
+                    document.getElementById('bank-name').value = data.bankWireDetails?.bankName || "";
+                    document.getElementById('bank-swift').value = data.bankWireDetails?.swiftCode || "";
+                    document.getElementById('bank-account').value = data.bankWireDetails?.accountNumber || "";
+                    document.getElementById('bank-acc-name').value = data.bankWireDetails?.accountName || "";
+
+                    const bankBadge = document.getElementById('bank-badge');
+                    const bankCard = document.getElementById('bank-info-card');
+                    if (!data.bankWireComplete) {
+                        bankBadge.className = "text-xs font-black px-2 py-0.5 rounded-md border border-orange-200 bg-orange-50 text-orange-500";
+                        bankBadge.textContent = "NOT SELL READY";
+                        bankCard.className = "p-3 text-xs rounded-xl border border-orange-100 bg-orange-50/20 text-orange-600";
+                        bankCard.innerHTML = `
+                            <strong><i class="fa-solid fa-bell"></i> Sell-Ready Status Gated:</strong>
+                            <p class="mt-1">Linking bank coordinates is optional. However, if a buyer initiates a purchase, you will have a 3-day window to complete this setup. Link your wire details now to bypass all delays and lock in instant sales.</p>
+                        `;
+                    } else {
+                        bankBadge.className = "text-xs font-black px-2 py-0.5 rounded-md border border-emerald-200 bg-emerald-50 text-brand-emerald";
+                        bankBadge.textContent = "SELL READY";
+                        bankCard.className = "p-3 text-xs rounded-xl border border-emerald-100 bg-emerald-50/20 text-brand-emerald";
+                        bankCard.innerHTML = `
+                            <strong><i class="fa-solid fa-shield-halved"></i> Wire Transfers Enabled:</strong>
+                            <p class="mt-1">International banking routing codes verified. Payouts will settle automatically via Escrow.com's split-wires directly into your bank account.</p>
+                        `;
+                    }
+
+                    // Pre-fetch Seller Listings
+                    fetchMyProducts();
+
+                } else if (role === "admin") {
+                    // Reveal Admin Vetting Control
+                    tabAdminBtn.classList.remove('hidden');
+                    fetchAdminPendingQueue();
+                }
+            } catch (error) {
+                console.error(error.message);
+            }
+        }
+
+        async function saveUserProfile() {
+            const token = localStorage.getItem("user_token");
+            if (!token) return;
+
+            const displayName = document.getElementById('db-display-name').value;
+            const preferredLang = document.getElementById('db-preferred-lang').value;
+            const isSeller = localStorage.getItem("user_role") === "seller";
+
+            const payload = {
+                displayName: displayName,
+                preferredLang: preferredLang
+            };
+
+            if (isSeller) {
+                payload.fullName = document.getElementById('db-full-name').value;
+                payload.phone = document.getElementById('db-phone').value;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/portal/profile`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || "Failed to save profile details.");
+
+                localStorage.setItem("user_display_name", data.displayName);
+                renderSessionUI();
+                changeLanguage(preferredLang);
+                alert("Profile details saved successfully!");
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
         async function saveBankWireDetails() {
             const token = localStorage.getItem("user_token");
             if (!token) return;
@@ -817,22 +1198,365 @@
             }
         }
 
+        // ---------------------------------------------------------------------
+        // SPRINT 3: SELLER WIZARD & ADMIN MODERATION ENGINE CONTROLLERS
+        // ---------------------------------------------------------------------
+        function toggleRevenueFields(checked) {
+            const group = document.getElementById('revenue-fields-group');
+            if (checked) {
+                group.classList.remove('hidden');
+            } else {
+                group.classList.add('hidden');
+                // Clear fields
+                document.getElementById('add-prod-mrr').value = 0;
+                document.getElementById('add-prod-arr').value = 0;
+                document.getElementById('add-prod-revenue').value = 0;
+                document.getElementById('add-prod-profit').value = 0;
+                document.getElementById('add-prod-ebitda').value = 0;
+            }
+        }
+
+        async function uploadProductLogoBinary(file) {
+            if (!file) return;
+            const token = localStorage.getItem("user_token");
+            if (!token) return;
+
+            // Set placeholder visual loading state
+            const icon = document.getElementById('logo-placeholder-icon');
+            const img = document.getElementById('logo-preview-img');
+            icon.className = "fa-solid fa-spinner fa-spin text-2xl text-brand-emerald";
+            img.classList.add('hidden');
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/portal/products/upload-logo`, {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${token}` },
+                    body: formData
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || "Failed to upload logo binary.");
+
+                // Render thumbnail preview
+                icon.classList.add('hidden');
+                img.src = data.logoUrl;
+                img.classList.remove('hidden');
+                document.getElementById('db-product-logo').value = data.logoUrl;
+                console.log("Product Logo uploaded successfully! URL:", data.logoUrl);
+            } catch (error) {
+                icon.className = "fa-solid fa-circle-exclamation text-2xl text-red-500";
+                alert(error.message);
+            }
+        }
+
+        async function submitProductListing(event) {
+            event.preventDefault();
+            const token = localStorage.getItem("user_token");
+            if (!token) return;
+
+            // Read Selected Product Types
+            const selectedTypes = [];
+            document.querySelectorAll('input[name="prod-type"]:checked').forEach(cb => {
+                selectedTypes.push(cb.value);
+            });
+
+            if (selectedTypes.length === 0) {
+                alert("Please select at least one Product Type category.");
+                return;
+            }
+
+            const payload = {
+                title: document.getElementById('add-prod-title').value,
+                description: document.getElementById('add-prod-desc').value,
+                productType: selectedTypes,
+                techStack: document.getElementById('add-prod-tech').value.split(",").map(x => x.trim()),
+                hasRevenue: document.getElementById('add-prod-has-revenue').checked,
+                mrr: parseFloat(document.getElementById('add-prod-mrr').value) || 0.0,
+                arr: parseFloat(document.getElementById('add-prod-arr').value) || 0.0,
+                annualRevenue: parseFloat(document.getElementById('add-prod-revenue').value) || 0.0,
+                annualProfit: parseFloat(document.getElementById('add-prod-profit').value) || 0.0,
+                ebitda: parseFloat(document.getElementById('add-prod-ebitda').value) || 0.0,
+                askingPrice: parseFloat(document.getElementById('add-prod-price').value),
+                metricsSource: "manual",
+                productLogo: document.getElementById('db-product-logo').value || "https://storage.googleapis.com/nanocorn-vault/logos/default_logo.png",
+                realName: document.getElementById('add-prod-real-name').value,
+                realURL: document.getElementById('add-prod-real-url').value,
+                domainTransferMethod: document.getElementById('add-prod-trans-domain').value,
+                codebaseTransferMethod: document.getElementById('add-prod-trans-code').value,
+                hostingTransferMethod: document.getElementById('add-prod-trans-hosting').value,
+                customerDatabaseMethod: document.getElementById('add-prod-trans-db').value,
+                paymentGatewayMethod: document.getElementById('add-prod-trans-gateway').value,
+                estimatedCompletionDays: parseInt(document.getElementById('add-prod-trans-days').value) || 3,
+                postSaleSupport: document.getElementById('add-prod-trans-support').value
+            };
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/portal/products`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || "Failed to submit product listing.");
+
+                alert("Product Listing submitted successfully! It has been entered in the Admin review queue.");
+                
+                // Reset listing form and GCS previews
+                document.getElementById('add-product-form').reset();
+                document.getElementById('logo-placeholder-icon').className = "fa-solid fa-image text-2xl text-slate-300";
+                document.getElementById('logo-preview-img').classList.add('hidden');
+                document.getElementById('db-product-logo').value = "";
+                toggleRevenueFields(true);
+
+                // Fetch new list and switch tabs
+                fetchMyProducts();
+                switchTab('dashboard-products');
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        async function fetchMyProducts() {
+            const token = localStorage.getItem("user_token");
+            if (!token) return;
+
+            const container = document.getElementById('my-products-list');
+            container.innerHTML = `
+                <div class="flex items-center justify-center p-8 text-slate-400 font-semibold text-sm">
+                    <i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading listed products...
+                </div>
+            `;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/portal/products/my`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error("Failed to load products.");
+
+                if (data.length === 0) {
+                    container.innerHTML = `
+                        <div class="border border-dashed border-slate-200 rounded-2xl p-8 text-center text-sm font-semibold text-slate-400 space-y-4">
+                            <i class="fa-solid fa-cubes text-3xl text-slate-300"></i>
+                            <p>You have not listed any commercial products on our directory yet.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = "";
+                data.forEach(item => {
+                    const statusColors = {
+                        "draft": "border-slate-200 bg-slate-50 text-slate-500",
+                        "pending_review": "border-orange-200 bg-orange-50 text-orange-500",
+                        "active": "border-emerald-200 bg-emerald-50 text-brand-emerald",
+                        "under_contract": "border-blue-200 bg-blue-50 text-blue-500",
+                        "sold": "border-slate-300 bg-slate-100 text-brand-navy"
+                    };
+                    const badgeClass = statusColors[item.status] || statusColors["draft"];
+                    const dateFormatted = new Date(item.createdAt).toLocaleDateString();
+
+                    html += `
+                        <div class="border border-slate-100 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm hover:shadow-md transition-all">
+                            <div class="flex items-center gap-4">
+                                <img src="${item.productLogo}" class="w-14 h-14 rounded-xl object-cover border border-slate-200 bg-brand-light flex-shrink-0">
+                                <div>
+                                    <h4 class="text-sm font-black text-brand-navy">${item.title}</h4>
+                                    <p class="text-[10px] font-bold text-slate-400 mt-0.5">Created: ${dateFormatted} | Tech: ${item.techStack.join(", ")}</p>
+                                    <div class="flex gap-1.5 mt-2">
+                                        ${item.productType.map(t => `<span class="text-[9px] font-black tracking-wide text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">${t}</span>`).join("")}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex sm:flex-col items-end justify-between w-full sm:w-auto border-t sm:border-t-0 border-slate-50 pt-3 sm:pt-0 gap-2">
+                                <span class="text-xs font-black tracking-widest ${badgeClass} border px-2 py-0.5 rounded-md capitalize">${item.status.replace("_", " ")}</span>
+                                <span class="text-base font-black text-brand-navy">$${item.askingPrice.toLocaleString()} USD</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch (error) {
+                container.innerHTML = `<div class="p-8 text-center text-red-500 font-semibold text-sm">Failed to load listed products.</div>`;
+            }
+        }
+
+        async function fetchAdminPendingQueue() {
+            const token = localStorage.getItem("user_token");
+            if (!token) return;
+
+            const container = document.getElementById('admin-pending-queue');
+            container.innerHTML = `
+                <div class="flex items-center justify-center p-8 text-slate-400 font-semibold text-sm">
+                    <i class="fa-solid fa-spinner fa-spin mr-2"></i> Fetching pending submissions...
+                </div>
+            `;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/admin/products/pending`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error("Failed to load admin queue.");
+
+                if (data.length === 0) {
+                    container.innerHTML = `
+                        <div class="border border-dashed border-slate-200 rounded-2xl p-8 text-center text-sm font-semibold text-emerald-500 bg-emerald-50/10 space-y-4">
+                            <i class="fa-solid fa-circle-check text-3xl"></i>
+                            <p>Verification queue is fully cleared! No products are currently pending review.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = "";
+                data.forEach(item => {
+                    const dateFormatted = new Date(item.createdAt).toLocaleDateString();
+                    html += `
+                        <div class="border border-slate-100 rounded-2xl p-6 shadow-sm space-y-4 bg-brand-light/30">
+                            <!-- Header -->
+                            <div class="flex items-start justify-between border-b border-slate-100 pb-3 gap-4">
+                                <div class="flex items-center gap-4">
+                                    <img src="${item.productLogo}" class="w-14 h-14 rounded-xl object-cover border border-slate-200 bg-white">
+                                    <div>
+                                        <h4 class="text-base font-black text-brand-navy">${item.title}</h4>
+                                        <p class="text-xs font-bold text-slate-400">Owner: ${item.sellerId} | Submitted: ${dateFormatted}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-xs font-black tracking-widest border border-orange-200 bg-orange-50 text-orange-500 px-2 py-0.5 rounded-md">PENDING VETTING</span>
+                                    <h3 class="text-lg font-black text-brand-navy mt-1.5">$${item.askingPrice.toLocaleString()} USD</h3>
+                                </div>
+                            </div>
+
+                            <!-- Meta -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                                <div class="space-y-1.5">
+                                    <div><strong class="text-brand-slate">Real Name (Protected):</strong> <span class="font-bold text-brand-emerald">${item.realName}</span></div>
+                                    <div><strong class="text-brand-slate">Real URL (Protected):</strong> <a href="${item.realURL}" target="_blank" class="font-bold text-blue-500 underline">${item.realURL}</a></div>
+                                    <div><strong class="text-brand-slate">Tech Stack:</strong> <span class="font-semibold">${item.techStack.join(", ")}</span></div>
+                                    <div><strong class="text-brand-slate">Product Classes:</strong> <span class="font-semibold">${item.productType.join(", ")}</span></div>
+                                </div>
+                                <div class="space-y-1.5">
+                                    <div><strong class="text-brand-slate">Has Revenue?</strong> <span class="font-bold">${item.hasRevenue ? "YES" : "NO"}</span></div>
+                                    <div><strong class="text-brand-slate">MRR / ARR:</strong> <span class="font-semibold">$${item.mrr} / $${item.arr}</span></div>
+                                    <div><strong class="text-brand-slate">EBITDA:</strong> <span class="font-semibold">$${item.ebitda}</span></div>
+                                    <div><strong class="text-brand-slate">M&A ETC Timeline:</strong> <span class="font-bold text-brand-emerald">${item.transferTerms.estimatedCompletionDays} Days</span></div>
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="text-xs text-brand-slate leading-relaxed border-t border-slate-100 pt-3">
+                                <strong>Description:</strong> <p class="mt-1">${item.description}</p>
+                            </div>
+
+                            <!-- Transfer terms details -->
+                            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-[10px] font-semibold text-brand-slate pt-2">
+                                <div class="border border-slate-200 rounded p-2 bg-white"><strong>Domain Transfer:</strong><p class="mt-1 text-slate-500">${item.transferTerms.domainTransferMethod}</p></div>
+                                <div class="border border-slate-200 rounded p-2 bg-white"><strong>Code Transfer:</strong><p class="mt-1 text-slate-500">${item.transferTerms.codebaseTransferMethod}</p></div>
+                                <div class="border border-slate-200 rounded p-2 bg-white"><strong>Hosting Transfer:</strong><p class="mt-1 text-slate-500">${item.transferTerms.hostingTransferMethod}</p></div>
+                                <div class="border border-slate-200 rounded p-2 bg-white"><strong>DB Migration:</strong><p class="mt-1 text-slate-500">${item.transferTerms.customerDatabaseMethod}</p></div>
+                                <div class="border border-slate-200 rounded p-2 bg-white"><strong>Gateway Swaps:</strong><p class="mt-1 text-slate-500">${item.transferTerms.paymentGatewayMethod}</p></div>
+                            </div>
+
+                            <!-- Moderation Commentary & Actions -->
+                            <div class="border-t border-slate-100 pt-4 flex flex-col sm:flex-row gap-4 items-center justify-between">
+                                <input type="text" id="vet-reason-${item.productId}" class="w-full sm:flex-grow bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-brand-emerald" placeholder="Write admin moderation feedback commentary reason...">
+                                <div class="flex gap-2 w-full sm:w-auto">
+                                    <button onclick="moderateProduct('${item.productId}', 'active')" class="flex-1 sm:flex-none bg-brand-emerald hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-all flex items-center justify-center gap-1.5"><i class="fa-solid fa-circle-check"></i> Approve</button>
+                                    <button onclick="moderateProduct('${item.productId}', 'draft')" class="flex-1 sm:flex-none bg-red-500 hover:bg-red-700 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-all flex items-center justify-center gap-1.5"><i class="fa-solid fa-circle-xmark"></i> Reject</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch (error) {
+                container.innerHTML = `<div class="p-8 text-center text-red-500 font-semibold text-sm">Failed to load admin vetting queue.</div>`;
+            }
+        }
+
+        async function moderateProduct(productId, targetStatus) {
+            const token = localStorage.getItem("user_token");
+            if (!token) return;
+
+            const reasonInput = document.getElementById(`vet-reason-${productId}`);
+            const reason = reasonInput ? reasonInput.value.strip() : "";
+
+            if (!reason) {
+                alert("Please write a mandatory vetting commentary reason before submitting your moderation action.");
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/admin/products/${productId}/status`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status: targetStatus, reason: reason })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || "Failed to moderate product.");
+
+                alert(`Success! Product status has been updated to '${targetStatus}'. Audit logs generated.`);
+                fetchAdminPendingQueue();
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
         function switchTab(tabId) {
             const profileTab = document.getElementById('sub-view-profile');
             const bankTab = document.getElementById('sub-view-bank');
+            const productsTab = document.getElementById('sub-view-products');
+            const addProductTab = document.getElementById('sub-view-add-product');
+            const adminTab = document.getElementById('sub-view-admin');
+
             const btnProfile = document.getElementById('tab-btn-profile');
             const btnBank = document.getElementById('tab-btn-bank');
+            const btnProducts = document.getElementById('tab-btn-products');
+            const btnAddProduct = document.getElementById('tab-btn-add-product');
+            const btnAdmin = document.getElementById('tab-btn-admin');
+
+            // Hide all tabs
+            profileTab.classList.add('hidden');
+            bankTab.classList.add('hidden');
+            productsTab.classList.add('hidden');
+            addProductTab.classList.add('hidden');
+            adminTab.classList.add('hidden');
+
+            // Reset all sidebar classes to default inactive
+            const inactiveClass = "flex-1 md:flex-none text-left px-4 py-3 rounded-xl transition-all hover:bg-slate-50 flex items-center gap-3";
+            const activeClass = "flex-1 md:flex-none text-left px-4 py-3 rounded-xl transition-all bg-emerald-50 text-brand-emerald flex items-center gap-3";
+            
+            btnProfile.className = inactiveClass;
+            btnBank.className = inactiveClass;
+            btnProducts.className = inactiveClass;
+            btnAddProduct.className = inactiveClass;
+            btnAdmin.className = inactiveClass;
 
             if (tabId === 'dashboard-profile') {
                 profileTab.classList.remove('hidden');
-                bankTab.classList.add('hidden');
-                btnProfile.className = "flex-1 md:flex-none text-left px-4 py-3 rounded-xl transition-all bg-emerald-50 text-brand-emerald flex items-center gap-3";
-                btnBank.className = "flex-1 md:flex-none text-left px-4 py-3 rounded-xl transition-all hover:bg-slate-50 flex items-center gap-3";
-            } else {
-                profileTab.classList.add('hidden');
+                btnProfile.className = activeClass;
+            } else if (tabId === 'dashboard-bank') {
                 bankTab.classList.remove('hidden');
-                btnProfile.className = "flex-1 md:flex-none text-left px-4 py-3 rounded-xl transition-all hover:bg-slate-50 flex items-center gap-3";
-                btnBank.className = "flex-1 md:flex-none text-left px-4 py-3 rounded-xl transition-all bg-emerald-50 text-brand-emerald flex items-center gap-3";
+                btnBank.className = activeClass;
+            } else if (tabId === 'dashboard-products') {
+                productsTab.classList.remove('hidden');
+                btnProducts.className = activeClass;
+            } else if (tabId === 'dashboard-add-product') {
+                addProductTab.classList.remove('hidden');
+                btnAddProduct.className = activeClass;
+            } else if (tabId === 'dashboard-admin') {
+                adminTab.classList.remove('hidden');
+                btnAdmin.className = activeClass;
             }
         }
     </script>
