@@ -228,10 +228,24 @@ function renderSessionUI() {
     const isAdmin = localStorage.getItem("user_is_admin") === "true";
 
     let roleDisplayHtml = "";
+    let btnColorClass = "text-brand-emerald bg-emerald-50 hover:bg-emerald-100 border-emerald-200";
+    let outerBorderClass = "border-slate-200";
+
+    if (role === "BUYER") {
+        btnColorClass = "text-blue-600 bg-blue-50 hover:bg-blue-100 border-blue-200";
+        outerBorderClass = "border-blue-200 shadow-sm shadow-blue-50/50";
+    } else if (role === "SELLER") {
+        btnColorClass = "text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border-indigo-200";
+        outerBorderClass = "border-indigo-200 shadow-sm shadow-indigo-50/50";
+    } else {
+        btnColorClass = "text-brand-emerald bg-emerald-50 hover:bg-emerald-100 border-emerald-200";
+        outerBorderClass = "border-emerald-200 shadow-sm shadow-emerald-50/50";
+    }
+
     if (isAdmin) {
         roleDisplayHtml = `
             <div class="relative inline-block text-left" id="admin-role-dropdown-container">
-                <button onclick="toggleAdminRoleDropdown()" class="flex items-center gap-1.5 text-xs font-black text-brand-emerald tracking-wide bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-md border border-emerald-200 transition-all focus:outline-none">
+                <button onclick="toggleAdminRoleDropdown()" class="flex items-center gap-1.5 text-xs font-black tracking-wide px-3 py-1.5 rounded-md border transition-all focus:outline-none ${btnColorClass}">
                     <i class="fa-solid fa-user-shield"></i> <span id="admin-active-role-label">SYSTEM ADMIN (${role})</span> <i class="fa-solid fa-chevron-down text-[8px]"></i>
                 </button>
                 <div id="admin-role-dropdown-menu" class="hidden absolute right-0 mt-2 w-44 rounded-xl bg-white border border-slate-100 shadow-xl z-50 text-xs font-bold text-brand-slate overflow-hidden">
@@ -244,12 +258,12 @@ function renderSessionUI() {
         `;
     } else {
         roleDisplayHtml = `
-            <span class="text-xs font-black text-brand-emerald tracking-wide bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">${role}</span>
+            <span class="text-xs font-black tracking-wide px-2 py-0.5 rounded-md border ${btnColorClass}">${role}</span>
         `;
     }
 
     container.innerHTML = `
-        <div class="flex items-center space-x-3 bg-brand-light px-3 py-1.5 rounded-lg border border-slate-200">
+        <div class="flex items-center space-x-3 bg-brand-light px-3 py-1.5 rounded-lg border transition-all duration-300 ${outerBorderClass}">
             ${roleDisplayHtml}
             <span class="text-sm font-bold text-brand-navy">${displayName}</span>
             <button onclick="logoutSession()" class="text-brand-slate hover:text-red-500 transition-colors text-sm font-semibold pl-2 border-l border-slate-200 focus:outline-none"><i class="fa-solid fa-right-from-bracket"></i></button>
