@@ -232,7 +232,7 @@ function renderSessionUI() {
         roleDisplayHtml = `
             <div class="relative inline-block text-left" id="admin-role-dropdown-container">
                 <button onclick="toggleAdminRoleDropdown()" class="flex items-center gap-1.5 text-xs font-black text-brand-emerald tracking-wide bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-md border border-emerald-200 transition-all focus:outline-none">
-                    <i class="fa-solid fa-user-shield"></i> <span id="admin-active-role-label">${role}</span> <i class="fa-solid fa-chevron-down text-[8px]"></i>
+                    <i class="fa-solid fa-user-shield"></i> <span id="admin-active-role-label">SYSTEM ADMIN (${role})</span> <i class="fa-solid fa-chevron-down text-[8px]"></i>
                 </button>
                 <div id="admin-role-dropdown-menu" class="hidden absolute right-0 mt-2 w-44 rounded-xl bg-white border border-slate-100 shadow-xl z-50 text-xs font-bold text-brand-slate overflow-hidden">
                     <a href="admin.html" class="block px-4 py-2.5 hover:bg-slate-50 transition-colors border-b border-slate-50 text-brand-navy"><i class="fa-solid fa-screwdriver-wrench"></i> Admin Portal</a>

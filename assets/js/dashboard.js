@@ -106,7 +106,12 @@ async function fetchUserProfile() {
             if (tabChatsBtn) tabChatsBtn.classList.remove('hidden');
             fetchMarketplaceCatalog();
         } else if (role === "admin") {
-            window.location.href = "admin.html";
+            if (tabMarketBtn) tabMarketBtn.classList.remove('hidden');
+            if (tabBankBtn) tabBankBtn.classList.remove('hidden');
+            if (tabProductsBtn) tabProductsBtn.classList.remove('hidden');
+            if (tabAddProdBtn) tabAddProdBtn.classList.remove('hidden');
+            if (tabChatsBtn) tabChatsBtn.classList.remove('hidden');
+            fetchMarketplaceCatalog();
         }
     } catch (error) {
         console.error(error.message);
