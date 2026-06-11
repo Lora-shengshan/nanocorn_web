@@ -144,9 +144,9 @@ async function saveUserProfile() {
         localStorage.setItem("user_display_name", data.displayName);
         renderSessionUI();
         changeLanguage(preferredLang);
-        alert("Profile details saved successfully!");
+        showToast("Profile details saved successfully!", "success");
     } catch (error) {
-        alert(error.message);
+        showToast(error.message, "error");
     }
 }
 
@@ -167,9 +167,9 @@ async function saveBankWireDetails() {
         if (!res.ok) throw new Error(data.detail || "Failed to save wire coordinates.");
 
         fetchUserProfile();
-        alert("USD bank wire coordinates verified and activated successfully! You are now Sell Ready.");
+        showToast("USD bank wire coordinates verified and activated successfully! You are now Sell Ready.", "success");
     } catch (error) {
-        alert(error.message);
+        showToast(error.message, "error");
     }
 }
 
@@ -286,7 +286,7 @@ async function submitProductListing(event) {
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || "Failed to submit product listing.");
 
-        alert(isEditMode ? "Product Listing updated successfully! It has re-entered the pending vetting queue." : "Product Listing submitted successfully! It has been entered in the Admin review queue.");
+        showToast(isEditMode ? "Product Listing updated successfully! It has re-entered the pending vetting queue." : "Product Listing submitted successfully! It has been entered in the Admin review queue.", "success");
         
         // Reset edit states
         window._editingProductId = null;
@@ -424,10 +424,10 @@ async function sellerDirectActivate(productId) {
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || "Failed to activate product.");
 
-        alert("Success! Your product is now active and live on the marketplace. Admin has been notified.");
+        showToast("Success! Your product is now active and live on the marketplace. Admin has been notified.", "success");
         fetchMyProducts();
     } catch (error) {
-        alert(error.message);
+        showToast(error.message, "error");
     }
 }
 window.sellerDirectActivate = sellerDirectActivate;

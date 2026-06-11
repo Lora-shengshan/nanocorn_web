@@ -320,7 +320,7 @@ async function switchAdminSessionRole(newRole) {
         // Re-render UI dynamically
         renderSessionUI();
         
-        alert(`Successfully switched session mode to ${newRole.toUpperCase()}!`);
+        showToast(`Successfully switched session mode to ${newRole.toUpperCase()}!`, "success");
         if (window.location.pathname.includes("admin.html")) {
             window.location.href = "index.html";
         }
