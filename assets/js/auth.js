@@ -105,6 +105,11 @@ function openAuthModal(preselectedRole = null) {
     setupGoogleGSI();
 }
 
+// Global exposure
+window.openAuthModal = openAuthModal;
+window.closeAuthModal = closeAuthModal;
+window.toggleAuthMode = toggleAuthMode;
+
 function closeAuthModal() {
     const modal = document.getElementById('auth-modal');
     if (modal) modal.classList.add('hidden');
@@ -202,6 +207,9 @@ function saveSession(data) {
     localStorage.setItem("user_id", data.userId);
     localStorage.setItem("user_role", data.role);
     localStorage.setItem("user_display_name", data.displayName);
+    if (data.role === "admin") {
+        localStorage.setItem("user_is_admin", "true");
+    }
     renderSessionUI();
 }
 
@@ -217,12 +225,34 @@ function renderSessionUI() {
 
     const displayName = localStorage.getItem("user_display_name");
     const role = localStorage.getItem("user_role").toUpperCase();
+    const isAdmin = localStorage.getItem("user_is_admin") === "true";
+
+    let roleDisplayHtml = "";
+    if (isAdmin) {
+        roleDisplayHtml = `
+            <div class="relative inline-block text-left" id="admin-role-dropdown-container">
+                <button onclick="toggleAdminRoleDropdown()" class="flex items-center gap-1.5 text-xs font-black text-brand-emerald tracking-wide bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-md border border-emerald-200 transition-all focus:outline-none">
+                    <i class="fa-solid fa-user-shield"></i> <span id="admin-active-role-label">${role}</span> <i class="fa-solid fa-chevron-down text-[8px]"></i>
+                </button>
+                <div id="admin-role-dropdown-menu" class="hidden absolute right-0 mt-2 w-44 rounded-xl bg-white border border-slate-100 shadow-xl z-50 text-xs font-bold text-brand-slate overflow-hidden">
+                    <a href="admin.html" class="block px-4 py-2.5 hover:bg-slate-50 transition-colors border-b border-slate-50 text-brand-navy"><i class="fa-solid fa-screwdriver-wrench"></i> Admin Portal</a>
+                    <button onclick="switchAdminSessionRole('buyer')" class="w-full text-left px-4 py-2.5 hover:bg-slate-50 transition-colors border-b border-slate-50 focus:outline-none flex items-center gap-1.5"><i class="fa-solid fa-cart-shopping"></i> Buyer Mode</button>
+                    <button onclick="switchAdminSessionRole('seller')" class="w-full text-left px-4 py-2.5 hover:bg-slate-50 transition-colors border-b border-slate-50 focus:outline-none flex items-center gap-1.5"><i class="fa-solid fa-cubes"></i> Seller Mode</button>
+                    <button onclick="switchAdminSessionRole('admin')" class="w-full text-left px-4 py-2.5 hover:bg-slate-50 transition-colors focus:outline-none flex items-center gap-1.5"><i class="fa-solid fa-user-shield text-brand-emerald"></i> Admin Mode</button>
+                </div>
+            </div>
+        `;
+    } else {
+        roleDisplayHtml = `
+            <span class="text-xs font-black text-brand-emerald tracking-wide bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">${role}</span>
+        `;
+    }
 
     container.innerHTML = `
         <div class="flex items-center space-x-3 bg-brand-light px-3 py-1.5 rounded-lg border border-slate-200">
-            <span class="text-xs font-black text-brand-emerald tracking-wide bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">${role}</span>
+            ${roleDisplayHtml}
             <span class="text-sm font-bold text-brand-navy">${displayName}</span>
-            <button onclick="logoutSession()" class="text-brand-slate hover:text-red-500 transition-colors text-sm font-semibold pl-2 border-l border-slate-200"><i class="fa-solid fa-right-from-bracket"></i></button>
+            <button onclick="logoutSession()" class="text-brand-slate hover:text-red-500 transition-colors text-sm font-semibold pl-2 border-l border-slate-200 focus:outline-none"><i class="fa-solid fa-right-from-bracket"></i></button>
         </div>
     `;
 
@@ -251,3 +281,49 @@ function logoutSession() {
     applyTranslations();
     alert("Session logged out successfully.");
 }
+
+// -----------------------------------------------------------------------------
+// SPRINT 5+: SECURE ADMINISTRATIVE ROLE-SWITCHER DROPDOWN
+// -----------------------------------------------------------------------------
+function toggleAdminRoleDropdown() {
+    const menu = document.getElementById('admin-role-dropdown-menu');
+    if (menu) {
+        menu.classList.toggle('hidden');
+    }
+}
+window.toggleAdminRoleDropdown = toggleAdminRoleDropdown;
+
+async function switchAdminSessionRole(newRole) {
+    try {
+        const res = await secureFetch("/api/portal/profile/role", {
+            method: "PUT",
+            body: JSON.stringify({ role: newRole })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Failed to switch administrative role.");
+
+        // Save new token and role
+        localStorage.setItem("user_token", data.token);
+        localStorage.setItem("user_role", data.role);
+        
+        // Close menu
+        const menu = document.getElementById('admin-role-dropdown-menu');
+        if (menu) menu.classList.add('hidden');
+
+        // Re-render UI dynamically
+        renderSessionUI();
+        
+        alert(`Successfully switched session mode to ${newRole.toUpperCase()}!`);
+    } catch (error) {
+        alert(error.message);
+    }
+}
+window.switchAdminSessionRole = switchAdminSessionRole;
+
+window.addEventListener('click', (e) => {
+    const dropdown = document.getElementById('admin-role-dropdown-menu');
+    const container = document.getElementById('admin-role-dropdown-container');
+    if (dropdown && container && !container.contains(e.target)) {
+        dropdown.classList.add('hidden');
+    }
+});
