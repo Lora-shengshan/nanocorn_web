@@ -261,7 +261,9 @@ function renderSessionUI() {
     const dbSec = document.getElementById('dashboard-section');
     if (dbSec) dbSec.classList.remove('hidden');
 
-    fetchUserProfile();
+    if (typeof fetchUserProfile === "function") {
+        fetchUserProfile();
+    }
 }
 
 function logoutSession() {
@@ -278,8 +280,13 @@ function logoutSession() {
     const dbSec = document.getElementById('dashboard-section');
     if (dbSec) dbSec.classList.add('hidden');
     
-    applyTranslations();
+    if (typeof applyTranslations === "function") {
+        applyTranslations();
+    }
     alert("Session logged out successfully.");
+    if (window.location.pathname.includes("admin.html")) {
+        window.location.href = "index.html";
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -314,6 +321,9 @@ async function switchAdminSessionRole(newRole) {
         renderSessionUI();
         
         alert(`Successfully switched session mode to ${newRole.toUpperCase()}!`);
+        if (window.location.pathname.includes("admin.html")) {
+            window.location.href = "index.html";
+        }
     } catch (error) {
         alert(error.message);
     }

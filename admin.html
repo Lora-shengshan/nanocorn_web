@@ -55,11 +55,7 @@
                 </div>
             </div>
             
-            <div class="flex items-center space-x-3 bg-brand-light px-3 py-1.5 rounded-lg border border-slate-200">
-                <span class="text-xs font-black text-brand-emerald tracking-wide bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">SYSTEM ADMIN</span>
-                <span class="text-sm font-bold text-brand-navy" id="admin-header-name">Admin</span>
-                <a href="index.html" class="text-brand-slate hover:text-red-500 transition-colors text-sm font-semibold pl-2 border-l border-slate-200 flex items-center gap-1"><i class="fa-solid fa-house"></i> Home</a>
-            </div>
+            <div id="auth-header-container" class="flex items-center gap-4"></div>
         </div>
     </header>
 
@@ -130,7 +126,10 @@
     <!-- Scripts -->
     <script src="assets/js/config.js"></script>
     <script>
-        document.getElementById('admin-header-name').textContent = displayName || "Admin";
+        const adminHeaderNameEl = document.getElementById('admin-header-name');
+        if (adminHeaderNameEl) {
+            adminHeaderNameEl.textContent = displayName || "Admin";
+        }
 
         // -----------------------------------------------------------------------------
         // Core Admin Actions (100% Secure & Decoupled)
@@ -460,6 +459,13 @@
 
         // Initialize default view
         switchAdminSubTab('vetting');
+    </script>
+
+    <!-- Include core nanocorn JS configurations & session modules -->
+    <script src="assets/js/auth.js"></script>
+    <script>
+        // Check dynamic administrative session UI on page load
+        checkExistingSession();
     </script>
 </body>
 </html>
