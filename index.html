@@ -22,6 +22,15 @@
                 }
             }
         }
+        
+        // Secure GSI Onload Queue Buffer to prevent any race condition errors
+        function setupGoogleGSI() {
+            if (window._setupGoogleGSIReal) {
+                window._setupGoogleGSIReal();
+            } else {
+                window._googleGSIPending = true;
+            }
+        }
     </script>
     
     <!-- FontAwesome Icons -->
@@ -132,8 +141,8 @@
             <button id="tab-btn-add-product" onclick="switchTab('dashboard-add-product')" class="flex-1 md:flex-none text-left px-4 py-3 rounded-xl transition-all hover:bg-slate-50 flex items-center gap-3 hidden">
                 <i class="fa-solid fa-circle-plus"></i> <span data-i18n="Add Product">Add Product</span>
             </button>
-            <button id="tab-btn-admin" onclick="switchTab('dashboard-admin')" class="flex-1 md:flex-none text-left px-4 py-3 rounded-xl transition-all hover:bg-slate-50 flex items-center gap-3 hidden">
-                <i class="fa-solid fa-user-shield"></i> <span data-i18n="Admin Vetting">Admin Vetting</span>
+            <button id="tab-btn-chats" onclick="switchTab('dashboard-chats')" class="flex-1 md:flex-none text-left px-4 py-3 rounded-xl transition-all hover:bg-slate-50 flex items-center gap-3 hidden">
+                <i class="fa-solid fa-comments"></i> <span data-i18n="My Chats">My Chats</span>
             </button>
         </aside>
 
@@ -275,12 +284,22 @@
                         
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-bold text-brand-slate mb-1">Anonymized Title ( 去識別化展示標題 )</label>
-                                <input type="text" id="add-prod-title" required class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="e.g. Anonymized AI Video Generator for Taiwan E-Commerce">
+                                <label class="block text-xs font-bold text-brand-slate mb-1">Title 產品名稱</label>
+                                <input type="text" id="add-prod-title" required class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="e.g. AI Video Generator for E-Commerce">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-brand-slate mb-1">Asking Price ( 期望出售價格 in USD )</label>
-                                <input type="number" id="add-prod-price" required class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="e.g. 5000">
+                                <label class="block text-xs font-bold text-brand-slate mb-1">
+                                    Asking Price ( 期望出售價格 in USD ) : 
+                                    <span id="add-prod-price-display" class="font-extrabold text-brand-emerald text-sm ml-1">$15,000</span>
+                                </label>
+                                <div class="pt-2">
+                                    <input type="range" id="add-prod-price" min="5000" max="50000" step="100" value="15000" oninput="updatePriceSliderDisplay(this.value)" required class="w-full accent-brand-emerald bg-slate-200 h-2 rounded-lg cursor-pointer">
+                                    <div class="flex justify-between text-[10px] text-slate-400 font-bold mt-1">
+                                        <span>$5,000</span>
+                                        <span>$27,500</span>
+                                        <span>$50,000</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -421,6 +440,11 @@
                             <label class="block text-xs font-bold text-brand-slate mb-1">Post-Sale Support Offered ( 售後技術協助承諾 )</label>
                             <textarea id="add-prod-trans-support" required rows="2" class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="e.g. 30 days of email assistance + 2 Zoom codebase review sessions"></textarea>
                         </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-brand-slate mb-1" data-i18n="Other critical items to transfer">Other critical items to transfer ( 其他要移轉的重要項目 )</label>
+                            <textarea id="add-prod-trans-other" rows="2" class="w-full bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="e.g. Active social media accounts, operational manuals, client contracts"></textarea>
+                        </div>
                     </div>
 
                     <!-- Step 4: Product Brand Logo Upload -->
@@ -451,15 +475,44 @@
                 </form>
             </div>
 
-            <!-- SUB-VIEW: Admin Vetting Dashboard (Admin Only) -->
-            <div id="sub-view-admin" class="hidden space-y-6">
-                <div class="border-b border-slate-100 pb-4">
-                    <h2 class="text-xl font-black text-brand-navy" data-i18n="Admin Vetting Queue">Admin Vetting Queue</h2>
-                    <p class="text-xs text-brand-slate font-medium" data-i18n="Review pending commercial listings and execute moderation actions.">Review pending commercial listings and execute moderation actions.</p>
+            <!-- SUB-VIEW: My Chats / Conversations (Buyer & Seller) -->
+            <div id="sub-view-chats" class="hidden h-[70vh] flex flex-col md:flex-row gap-6">
+                <!-- Left Column: Conversations List -->
+                <div class="w-full md:w-80 flex flex-col border border-slate-100 rounded-3xl bg-white p-5 space-y-4 flex-shrink-0 shadow-sm">
+                    <h3 class="text-base font-black text-brand-navy flex items-center gap-2"><i class="fa-solid fa-comments text-brand-emerald"></i> Conversations</h3>
+                    <div id="chats-list-container" class="flex-grow overflow-y-auto space-y-2 scrollbar-thin">
+                        <!-- Dynamic conversation cards go here -->
+                    </div>
                 </div>
-
-                <div id="admin-pending-queue" class="space-y-6">
-                    <!-- Dynamic Admin Moderation Cards go here -->
+                <!-- Right Column: Active Chat Window -->
+                <div id="active-chat-window" class="flex-grow flex flex-col border border-slate-100 rounded-3xl bg-white p-5 hidden shadow-sm">
+                    <div class="border-b border-slate-100 pb-3 flex items-center justify-between flex-shrink-0">
+                        <div>
+                            <h4 id="active-chat-title" class="text-sm font-black text-brand-navy">Product Name</h4>
+                            <p id="active-chat-subtitle" class="text-[10px] font-bold text-slate-400">Participant: usr_xxxx</p>
+                        </div>
+                    </div>
+                    <!-- Messages Log -->
+                    <div id="active-chat-messages" class="flex-grow overflow-y-auto p-4 space-y-3 bg-brand-light/35 rounded-2xl scrollbar-thin my-4">
+                        <!-- Message bubbles thread -->
+                    </div>
+                    <!-- Input Message bar -->
+                    <form id="chat-message-form" onsubmit="submitChatMessage(event)" class="flex gap-2 items-center flex-shrink-0">
+                        <input type="file" id="chat-file-input" onchange="uploadChatFile(this.files[0])" class="hidden">
+                        <button type="button" onclick="document.getElementById('chat-file-input').click()" class="bg-slate-100 hover:bg-slate-200 text-brand-slate px-3.5 py-3 rounded-xl transition-all focus:outline-none flex items-center justify-center">
+                            <i class="fa-solid fa-paperclip"></i>
+                        </button>
+                        <input type="text" id="chat-message-text" class="flex-grow bg-brand-light border border-slate-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-brand-emerald focus:bg-white transition-all text-brand-navy" placeholder="Write message...">
+                        <button type="submit" class="bg-brand-emerald hover:bg-emerald-700 text-white px-4 py-3 rounded-xl transition-all shadow-md shadow-emerald-50 focus:outline-none flex items-center justify-center">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+                <!-- Selection Placeholder -->
+                <div id="chat-empty-placeholder" class="flex-grow flex flex-col items-center justify-center border border-dashed border-slate-200 rounded-3xl bg-slate-50/50 p-12 shadow-sm">
+                    <i class="fa-solid fa-comments text-4xl text-slate-300 mb-3 block"></i>
+                    <h4 class="text-brand-navy font-black text-sm">No Active Conversation Selected</h4>
+                    <p class="text-xs text-brand-slate mt-1">Select a conversation from the left to start negotiating or sharing deliverables.</p>
                 </div>
             </div>
 
@@ -508,7 +561,152 @@
                 <div id="marketplace-products-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                     <!-- Dynamic Product Directory Cards go here -->
                 </div>
+    </div>
+
+    <!-- SELLER LEADS / ANALYTICS MODAL (SLIDER & METRICS AUDITOR) -->
+    <div id="seller-leads-modal" class="fixed inset-0 bg-brand-navy/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-2xl w-full relative shadow-2xl border border-slate-100 space-y-4 max-h-[85vh] overflow-y-auto">
+            <button onclick="closeLeadsModal()" class="absolute top-4 right-4 text-brand-slate hover:text-brand-navy transition-colors text-xl focus:outline-none">
+                <i class="fa-solid fa-circle-xmark"></i>
+            </button>
+            <div class="border-b border-slate-100 pb-3">
+                <h3 class="text-lg font-black text-brand-navy"><i class="fa-solid fa-chart-line text-brand-emerald"></i> Listing Analytics & Leads</h3>
+                <p class="text-xs text-brand-slate font-medium">View buyers who have executed your product's Non-Disclosure Agreement (NDA).</p>
             </div>
+            
+            <div class="bg-slate-50 p-4 rounded-xl flex justify-between items-center text-xs font-bold text-brand-slate">
+                <div>Total Virtual NDA Signatures: <span id="leads-total-count" class="text-brand-emerald font-black text-sm ml-1">0</span></div>
+            </div>
+
+            <div class="bg-white border border-slate-100 rounded-xl overflow-hidden">
+                <table class="w-full text-left border-collapse text-xs font-semibold text-brand-slate">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-100 text-[10px] font-black uppercase text-slate-400">
+                            <th class="p-3">Buyer Name</th>
+                            <th class="p-3">Email Address</th>
+                            <th class="p-3">Signed At</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leads-list-tbody">
+                        <!-- Dynamic lead rows go here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- BUYER DETAILED PRODUCT DETAILS & HANDOVER SPECS MODAL -->
+    <div id="buyer-product-details-modal" class="fixed inset-0 bg-brand-navy/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-3xl w-full relative shadow-2xl border border-slate-100 space-y-5 max-h-[90vh] overflow-y-auto">
+            <button onclick="closeBuyerDetailsModal()" class="absolute top-4 right-4 text-brand-slate hover:text-brand-navy transition-colors text-xl focus:outline-none">
+                <i class="fa-solid fa-circle-xmark"></i>
+            </button>
+            
+            <!-- Header -->
+            <div class="border-b border-slate-100 pb-3 flex items-start gap-4">
+                <img id="buyer-det-logo" class="w-14 h-14 rounded-2xl object-cover border border-slate-100 bg-brand-light flex-shrink-0">
+                <div>
+                    <h3 class="text-lg font-black text-brand-navy" id="buyer-det-title">SecureEscrow Pro</h3>
+                    <p class="text-xs text-brand-slate font-medium">Unlocked commercial asset coordinates & transfer specifications.</p>
+                </div>
+            </div>
+
+            <!-- Meta Parameters -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-semibold text-brand-slate bg-brand-light/35 p-4 rounded-2xl">
+                <div class="space-y-2">
+                    <div>Real Name: <span class="font-bold text-brand-emerald" id="buyer-det-real-name">SecureEscrow Pro</span></div>
+                    <div>Official Domain: <a id="buyer-det-real-url" target="_blank" class="font-bold text-blue-500 underline flex items-center gap-1 mt-0.5"><i class="fa-solid fa-earth-americas"></i> Link</a></div>
+                    <div>Asking Price: <span class="font-extrabold text-brand-navy" id="buyer-det-asking-price">$35,000 USD</span></div>
+                </div>
+                <div class="space-y-2">
+                    <div>Product Type: <span id="buyer-det-type">SaaS</span></div>
+                    <div>Tech Stack: <span id="buyer-det-tech">Python</span></div>
+                    <div>Revenue MRR/ARR: <span id="buyer-det-revenue">$0 / $0</span></div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="text-xs text-brand-slate leading-relaxed">
+                <strong>Description:</strong> <p class="mt-1 font-medium text-slate-500" id="buyer-det-desc"></p>
+            </div>
+
+            <!-- Handover spec cards -->
+            <div class="border-t border-slate-100 pt-4">
+                <h4 class="text-xs font-black text-brand-navy mb-3"><i class="fa-solid fa-truck-ramp-box text-brand-emerald"></i> Handover Terms & Methodology</h4>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-[10px] font-semibold text-brand-slate">
+                    <div class="border border-slate-200 rounded-xl p-3 bg-white shadow-sm"><strong>Domain Transfer:</strong><p class="mt-1 text-slate-500 font-medium" id="buyer-det-trans-domain"></p></div>
+                    <div class="border border-slate-200 rounded-xl p-3 bg-white shadow-sm"><strong>Code Transfer:</strong><p class="mt-1 text-slate-500 font-medium" id="buyer-det-trans-code"></p></div>
+                    <div class="border border-slate-200 rounded-xl p-3 bg-white shadow-sm"><strong>Hosting Transfer:</strong><p class="mt-1 text-slate-500 font-medium" id="buyer-det-trans-hosting"></p></div>
+                    <div class="border border-slate-200 rounded-xl p-3 bg-white shadow-sm"><strong>DB Migration:</strong><p class="mt-1 text-slate-500 font-medium" id="buyer-det-trans-db"></p></div>
+                    <div class="border border-slate-200 rounded-xl p-3 bg-white shadow-sm"><strong>Gateway Swaps:</strong><p class="mt-1 text-slate-500 font-medium" id="buyer-det-trans-gateway"></p></div>
+                    <div class="border border-slate-200 rounded-xl p-3 bg-white shadow-sm"><strong>Other Items:</strong><p class="mt-1 text-slate-500 font-medium" id="buyer-det-trans-other"></p></div>
+                </div>
+            </div>
+
+            <div class="text-[10px] font-bold text-brand-slate border-t border-slate-100 pt-3 flex items-center gap-1.5"><i class="fa-solid fa-clock text-brand-emerald"></i> Estimated Handover Duration: <span id="buyer-det-trans-days" class="font-extrabold text-brand-emerald">3 Days</span> | Post-Sale Support: <span id="buyer-det-trans-support" class="font-semibold text-slate-500">None</span></div>
+
+            <!-- Action Buttons Footer -->
+            <div class="border-t border-slate-100 pt-4 flex gap-3">
+                <button id="buyer-det-btn-chat" class="flex-1 bg-slate-100 hover:bg-slate-200 text-brand-navy text-xs font-extrabold py-3.5 rounded-xl transition-all flex items-center justify-center gap-1.5 focus:outline-none">
+                    <i class="fa-solid fa-comments"></i> <span>Send Message to Seller</span>
+                </button>
+                <button id="buyer-det-btn-buy" class="flex-1 bg-brand-emerald hover:bg-emerald-700 text-white text-xs font-extrabold py-3.5 rounded-xl transition-all shadow-md shadow-emerald-100 flex items-center justify-center gap-1.5 focus:outline-none">
+                    <i class="fa-solid fa-cart-shopping"></i> <span>Buy Now (Initiate Escrow)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ESCROW LEGAL CONSENT & KYC CHECKOUT MODAL -->
+    <div id="escrow-consent-modal" class="fixed inset-0 bg-brand-navy/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-lg w-full relative shadow-2xl border border-slate-100 space-y-4 max-h-[85vh] overflow-y-auto">
+            <button onclick="closeEscrowConsentModal()" class="absolute top-4 right-4 text-brand-slate hover:text-brand-navy transition-colors text-xl focus:outline-none">
+                <i class="fa-solid fa-circle-xmark"></i>
+            </button>
+            <div class="border-b border-slate-100 pb-3 flex items-center gap-2">
+                <h3 class="text-lg font-black text-brand-navy"><i class="fa-solid fa-shield-halved text-brand-emerald"></i> Legal Consent & Verification</h3>
+            </div>
+            
+            <p class="text-xs text-brand-slate leading-relaxed font-semibold">To remain compliant with the Taiwan Personal Data Protection Act (PDPA) and international Escrow KYC guidelines, please confirm your legal coordinates and check the mandatory consents:</p>
+
+            <!-- KYC Verification Form -->
+            <div class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                <h4 class="text-xs font-black text-brand-navy">1. Verify Your KYC Coordinates</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div>
+                        <label class="block text-[10px] font-bold text-brand-slate mb-1">Full Legal Name</label>
+                        <input type="text" id="escrow-buyer-name" required class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-brand-emerald text-brand-navy">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-brand-slate mb-1">Verified Phone Number</label>
+                        <input type="text" id="escrow-buyer-phone" required class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-brand-emerald text-brand-navy">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Consent Checklist -->
+            <div class="space-y-2.5 text-xs text-brand-slate pt-1">
+                <h4 class="text-xs font-black text-brand-navy">2. Explicit Data Sharing Consents</h4>
+                <label class="flex items-start gap-2.5 cursor-pointer">
+                    <input type="checkbox" id="consent-cb-escrow" class="mt-0.5 accent-brand-emerald flex-shrink-0">
+                    <span class="text-[11px] font-medium leading-normal">I authorize nanocorn to share my full legal name, business email, and phone number with Escrow.com for the sole purpose of setting up this secure, split-wire transaction.</span>
+                </label>
+                <label class="flex items-start gap-2.5 cursor-pointer">
+                    <input type="checkbox" id="consent-cb-terms" class="mt-0.5 accent-brand-emerald flex-shrink-0">
+                    <span class="text-[11px] font-medium leading-normal">I agree to nanocorn's Terms of Service, operating policies, and Privacy Policies.</span>
+                </label>
+                <label class="flex items-start gap-2.5 cursor-pointer">
+                    <input type="checkbox" id="consent-cb-partner" class="mt-0.5 accent-brand-emerald flex-shrink-0">
+                    <span class="text-[11px] font-medium leading-normal">I acknowledge and agree to Escrow.com's Terms of Service and Privacy Policies.</span>
+                </label>
+            </div>
+
+            <!-- Submit button -->
+            <button id="escrow-submit-btn" class="w-full bg-brand-emerald hover:bg-emerald-700 text-white text-sm font-black py-4 rounded-xl transition-all shadow-md shadow-emerald-100 flex items-center justify-center gap-1.5 focus:outline-none">
+                <i class="fa-solid fa-circle-check"></i> Agree and Initiate Escrow Transaction
+            </button>
+        </div>
+    </div>
 
         </div>
     </div>
@@ -686,860 +884,13 @@
     </div>
 
     <!-- =========================================================================
-         CORE CONTROLLER SCRIPTS
+         CORE CONTROLLER SCRIPTS (MODULARIZED FOR AI EXTENSIBILITY)
          ========================================================================= -->
-    <script>
-        const API_BASE_URL = "https://nanocorn-backend-961610016672.us-central1.run.app";
-        let isLoginMode = false;
-        let isCodeSent = false;
-
-        // ---------------------------------------------------------------------
-        // L10N Loader Configuration
-        // ---------------------------------------------------------------------
-        async function initL10n() {
-            await i18next
-                .use(i18nextHttpBackend)
-                .init({
-                    lng: localStorage.getItem('user_lang') || 'en',
-                    fallbackLng: 'en',
-                    backend: {
-                        loadPath: './locales/{{lng}}.json'
-                    }
-                });
-            
-            document.getElementById('lang-selector').value = i18next.language;
-            document.documentElement.lang = i18next.language;
-            applyTranslations();
-        }
-
-        function applyTranslations() {
-            document.querySelectorAll('[data-i18n]').forEach(element => {
-                const key = element.getAttribute('data-i18n');
-                element.textContent = i18next.t(key);
-            });
-            // Update placeholders if any exist
-            const emailInput = document.getElementById('auth-email');
-            if (emailInput) emailInput.placeholder = i18next.t("Enter your email");
-            const passInput = document.getElementById('auth-password');
-            if (passInput) passInput.placeholder = "••••••••";
-        }
-
-        function changeLanguage(localeCode) {
-            i18next.changeLanguage(localeCode, () => {
-                localStorage.setItem('user_lang', localeCode);
-                document.documentElement.lang = localeCode;
-                applyTranslations();
-            });
-        }
-
-        // Initialize on load
-        window.addEventListener('DOMContentLoaded', () => {
-            initL10n();
-            setupGoogleGSI();
-            checkExistingSession();
-        });
-
-        // ---------------------------------------------------------------------
-        // Google GSI Sign-In Handlers (Portability Verified)
-        // ---------------------------------------------------------------------
-        function setupGoogleGSI() {
-            if (typeof google === 'undefined' || !google.accounts) {
-                console.log("Google GSI script not loaded yet. Waiting for onload...");
-                return;
-            }
-            try {
-                google.accounts.id.initialize({
-                    client_id: "961610016672-u9atthbs32er3hie9c859j23rpcqk1dt.apps.googleusercontent.com",
-                    callback: handleGoogleCredentialResponse
-                });
-                google.accounts.id.renderButton(
-                    document.getElementById("google-gsi-signin-btn"),
-                    { theme: "outline", size: "large", width: "320" }
-                );
-            } catch (err) {
-                console.error("Failed to render Google GSI Button:", err);
-            }
-        }
-        window.setupGoogleGSI = setupGoogleGSI;
-
-        async function handleGoogleCredentialResponse(response) {
-            const idToken = response.credential;
-            const selectedRole = document.querySelector('input[name="role"]:checked')?.value || 'buyer';
-
-            try {
-                const res = await fetch(`${API_BASE_URL}/api/portal/callback`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ idToken: idToken, role: selectedRole })
-                });
-
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.detail || "Google Login failed.");
-
-                saveSession(data);
-                closeAuthModal();
-                alert(`Welcome back, ${data.displayName}!`);
-            } catch (error) {
-                alert(error.message);
-            }
-        }
-
-        // ---------------------------------------------------------------------
-        // Modal & Form State Management
-        // ---------------------------------------------------------------------
-        function setAuthMode(mode) {
-            const submitBtn = document.getElementById('auth-submit-btn');
-            const toggleLink = document.getElementById('auth-toggle-link');
-            const roleGroup = document.getElementById('role-selection-group');
-            const otpSection = document.getElementById('otp-verification-section');
-            const tabLogin = document.getElementById('modal-tab-login');
-            const tabSignup = document.getElementById('modal-tab-signup');
-
-            if (mode === 'login') {
-                isLoginMode = true;
-                submitBtn.textContent = "Sign In";
-                toggleLink.textContent = "Need an account? Sign Up instead";
-                roleGroup.classList.add('hidden');
-                otpSection.classList.add('hidden');
-                
-                // Highlight Login Tab
-                tabLogin.className = "flex-1 pb-3 text-brand-emerald border-b-2 border-brand-emerald transition-all font-black";
-                tabSignup.className = "flex-1 pb-3 text-slate-400 border-b-2 border-transparent transition-all font-semibold";
-            } else {
-                isLoginMode = false;
-                submitBtn.textContent = i18next.t("Send Verification Code");
-                toggleLink.textContent = "Already have an account? Sign In directly";
-                roleGroup.classList.remove('hidden');
-                
-                // Highlight Signup Tab
-                tabLogin.className = "flex-1 pb-3 text-slate-400 border-b-2 border-transparent transition-all font-semibold";
-                tabSignup.className = "flex-1 pb-3 text-brand-emerald border-b-2 border-brand-emerald transition-all font-black";
-                
-                if (isCodeSent) {
-                    otpSection.classList.remove('hidden');
-                    submitBtn.textContent = i18next.t("Complete Registration");
-                }
-            }
-        }
-
-        function toggleAuthMode() {
-            if (isLoginMode) {
-                setAuthMode('signup');
-            } else {
-                setAuthMode('login');
-            }
-        }
-
-        function openAuthModal(preselectedRole = null) {
-            document.getElementById('auth-modal').classList.remove('hidden');
-            
-            if (preselectedRole) {
-                // If a user clicks a role CTA, we want them to sign up!
-                setAuthMode('signup');
-                const radio = document.querySelector(`input[name="role"][value="${preselectedRole}"]`);
-                if (radio) radio.checked = true;
-            } else {
-                // If they click the header button, default to Sign In!
-                setAuthMode('login');
-            }
-            
-            setupGoogleGSI();
-        }
-
-        function closeAuthModal() {
-            document.getElementById('auth-modal').classList.add('hidden');
-            resetAuthForm();
-        }
-
-        function resetAuthForm() {
-            isLoginMode = false;
-            isCodeSent = false;
-            document.getElementById('auth-wizard-form').reset();
-            document.getElementById('role-selection-group').classList.remove('hidden');
-            document.getElementById('otp-verification-section').classList.add('hidden');
-            document.getElementById('auth-submit-btn').textContent = i18next.t("Send Verification Code");
-            document.getElementById('auth-toggle-link').textContent = "Already have an account? Sign In directly";
-            
-            // Reset tab highlights to signup default
-            setAuthMode('signup');
-        }
-
-        // ---------------------------------------------------------------------
-        // API Form Submission Handler (Email OTP Flow)
-        // ---------------------------------------------------------------------
-        async function handleAuthSubmit(event) {
-            event.preventDefault();
-
-            const email = document.getElementById('auth-email').value;
-            const password = document.getElementById('auth-password').value;
-            const role = document.querySelector('input[name="role"]:checked')?.value || 'buyer';
-
-            if (isLoginMode) {
-                // Execute standard password login
-                try {
-                    const res = await fetch(`${API_BASE_URL}/api/portal/access`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ email: email, password: password })
-                    });
-                    const data = await res.json();
-                    if (!res.ok) throw new Error(data.detail || "Login failed.");
-
-                    saveSession(data);
-                    closeAuthModal();
-                    alert(`Welcome, ${data.displayName}!`);
-                } catch (error) {
-                    alert(error.message);
-                }
-                return;
-            }
-
-            if (!isCodeSent) {
-                // Step 1: Request OTP code via AWS SES
-                try {
-                    const res = await fetch(`${API_BASE_URL}/api/portal/dispatch`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ email: email, role: role })
-                    });
-                    const data = await res.json();
-                    if (!res.ok) throw new Error(data.detail || "Failed to send code.");
-
-                    isCodeSent = true;
-                    document.getElementById('otp-verification-section').classList.remove('hidden');
-                    document.getElementById('auth-submit-btn').textContent = i18next.t("Complete Registration");
-                } catch (error) {
-                    alert(error.message);
-                }
-            } else {
-                // Step 2: Validate OTP and Password registration
-                const code = document.getElementById('auth-otp-code').value;
-                const displayName = document.getElementById('auth-display-name').value;
-
-                try {
-                    const res = await fetch(`${API_BASE_URL}/api/portal/confirm`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            email: email,
-                            code: code,
-                            password: password,
-                            displayName: displayName
-                        })
-                    });
-                    const data = await res.json();
-                    if (!res.ok) throw new Error(data.detail || "Registration failed.");
-
-                    saveSession(data);
-                    closeAuthModal();
-                    alert(i18next.t("Successfully Registered!"));
-                } catch (error) {
-                    alert(error.message);
-                }
-            }
-        }
-
-        // ---------------------------------------------------------------------
-        // Portable Session & Dashboard Management (Sprint 2 Core)
-        // ---------------------------------------------------------------------
-        function saveSession(data) {
-            localStorage.setItem("user_token", data.token);
-            localStorage.setItem("user_id", data.userId);
-            localStorage.setItem("user_role", data.role);
-            localStorage.setItem("user_display_name", data.displayName);
-            renderSessionUI();
-        }
-
-        function checkExistingSession() {
-            if (localStorage.getItem("user_token")) {
-                renderSessionUI();
-            }
-        }
-
-        function renderSessionUI() {
-            const container = document.getElementById('auth-header-container');
-            const displayName = localStorage.getItem("user_display_name");
-            const role = localStorage.getItem("user_role").toUpperCase();
-
-            // Render Header logged-in box
-            container.innerHTML = `
-                <div class="flex items-center space-x-3 bg-brand-light px-3 py-1.5 rounded-lg border border-slate-200">
-                    <span class="text-xs font-black text-brand-emerald tracking-wide bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">${role}</span>
-                    <span class="text-sm font-bold text-brand-navy">${displayName}</span>
-                    <button onclick="logoutSession()" class="text-brand-slate hover:text-red-500 transition-colors text-sm font-semibold pl-2 border-l border-slate-200"><i class="fa-solid fa-right-from-bracket"></i></button>
-                </div>
-            `;
-
-            // Toggle centerpiece layouts
-            document.getElementById('hero-public-section').classList.add('hidden');
-            document.getElementById('dashboard-section').classList.remove('hidden');
-
-            // Fetch full verified profile parameters
-            fetchUserProfile();
-        }
-
-        function logoutSession() {
-            localStorage.clear();
-            const container = document.getElementById('auth-header-container');
-            container.innerHTML = `
-                <button onclick="openAuthModal()" class="bg-brand-navy hover:bg-slate-800 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all shadow-md shadow-slate-100" data-i18n="Sign Up / Sign In">Sign Up / Sign In</button>
-            `;
-            
-            // Revert back to landing page centerpiece
-            document.getElementById('hero-public-section').classList.remove('hidden');
-            document.getElementById('dashboard-section').classList.add('hidden');
-            
-            applyTranslations();
-            alert("Session logged out successfully.");
-        }
-
-
-
-        // ---------------------------------------------------------------------
-        // SPRINT 2 & 3: PROFILE, DASHBOARD & PRODUCT ONBOARDING CONTROLLERS
-        // ---------------------------------------------------------------------
-        async function fetchUserProfile() {
-            const token = localStorage.getItem("user_token");
-            if (!token) return;
-
-            try {
-                const res = await fetch(`${API_BASE_URL}/api/portal/profile`, {
-                    headers: { "Authorization": `Bearer ${token}` }
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.detail || "Failed to load user profile.");
-
-                // Set Base Fields
-                document.getElementById('db-email').value = data.email;
-                document.getElementById('db-role').value = data.role;
-                document.getElementById('db-display-name').value = data.displayName;
-                document.getElementById('db-preferred-lang').value = data.preferredLang;
-
-                // Sync Language Selectors
-                document.getElementById('lang-selector').value = data.preferredLang;
-                document.documentElement.lang = data.preferredLang;
-
-                const role = data.role;
-                const tabBankBtn = document.getElementById('tab-btn-bank');
-                const tabProductsBtn = document.getElementById('tab-btn-products');
-                const tabAddProdBtn = document.getElementById('tab-btn-add-product');
-                const tabMarketBtn = document.getElementById('tab-btn-market');
-                const tabAdminBtn = document.getElementById('tab-btn-admin');
-                const sellerKycPane = document.getElementById('seller-kyc-pane');
-
-                // Initialize visibility overrides (Reset state)
-                tabBankBtn.classList.add('hidden');
-                tabProductsBtn.classList.add('hidden');
-                tabAddProdBtn.classList.add('hidden');
-                tabMarketBtn.classList.add('hidden');
-                tabAdminBtn.classList.add('hidden');
-                sellerKycPane.classList.add('hidden');
-
-                if (role === "seller") {
-                    // Reveal Seller-Specific Controls
-                    tabBankBtn.classList.remove('hidden');
-                    tabProductsBtn.classList.remove('hidden');
-                    tabAddProdBtn.classList.remove('hidden');
-                    sellerKycPane.classList.remove('hidden');
-
-                    // Set KYC inputs
-                    document.getElementById('db-full-name').value = data.fullName || "";
-                    document.getElementById('db-phone').value = data.phone || "";
-
-                    // Sync KYC Status Card & Badges
-                    const kycBadge = document.getElementById('kyc-badge');
-                    const kycCard = document.getElementById('kyc-info-card');
-                    if (data.sellerStatus === "registered") {
-                        kycBadge.className = "text-xs font-black px-2 py-0.5 rounded-md border border-red-200 bg-red-50 text-red-500";
-                        kycBadge.textContent = "KYC INCOMPLETE";
-                        kycCard.className = "p-3 text-xs rounded-xl border border-red-100 bg-red-50/20 text-red-600";
-                        kycCard.innerHTML = `
-                            <strong><i class="fa-solid fa-triangle-exclamation"></i> KYC Verification Required:</strong>
-                            <p class="mt-1">Please enter your Full Legal Name (matching your passport) and verified Phone Number. This data is required prior to listing commercial products on the platform.</p>
-                        `;
-                    } else {
-                        kycBadge.className = "text-xs font-black px-2 py-0.5 rounded-md border border-emerald-200 bg-emerald-50 text-brand-emerald";
-                        kycBadge.textContent = "KYC VERIFIED";
-                        kycCard.className = "p-3 text-xs rounded-xl border border-emerald-100 bg-emerald-50/20 text-brand-emerald";
-                        kycCard.innerHTML = `
-                            <strong><i class="fa-solid fa-circle-check"></i> Profile Approved:</strong>
-                            <p class="mt-1">Your identity metrics have been successfully logged. You are fully authorized to list commercial SaaS and code assets on our directory.</p>
-                        `;
-                    }
-
-                    // Sync USD Bank Wire Coordinates & Badges
-                    document.getElementById('bank-name').value = data.bankWireDetails?.bankName || "";
-                    document.getElementById('bank-swift').value = data.bankWireDetails?.swiftCode || "";
-                    document.getElementById('bank-account').value = data.bankWireDetails?.accountNumber || "";
-                    document.getElementById('bank-acc-name').value = data.bankWireDetails?.accountName || "";
-
-                    const bankBadge = document.getElementById('bank-badge');
-                    const bankCard = document.getElementById('bank-info-card');
-                    if (!data.bankWireComplete) {
-                        bankBadge.className = "text-xs font-black px-2 py-0.5 rounded-md border border-orange-200 bg-orange-50 text-orange-500";
-                        bankBadge.textContent = "NOT SELL READY";
-                        bankCard.className = "p-3 text-xs rounded-xl border border-orange-100 bg-orange-50/20 text-orange-600";
-                        bankCard.innerHTML = `
-                            <strong><i class="fa-solid fa-bell"></i> Sell-Ready Status Gated:</strong>
-                            <p class="mt-1">Linking bank coordinates is optional. However, if a buyer initiates a purchase, you will have a 3-day window to complete this setup. Link your wire details now to bypass all delays and lock in instant sales.</p>
-                        `;
-                    } else {
-                        bankBadge.className = "text-xs font-black px-2 py-0.5 rounded-md border border-emerald-200 bg-emerald-50 text-brand-emerald";
-                        bankBadge.textContent = "SELL READY";
-                        bankCard.className = "p-3 text-xs rounded-xl border border-emerald-100 bg-emerald-50/20 text-brand-emerald";
-                        bankCard.innerHTML = `
-                            <strong><i class="fa-solid fa-shield-halved"></i> Wire Transfers Enabled:</strong>
-                            <p class="mt-1">International banking routing codes verified. Payouts will settle automatically via Escrow.com's split-wires directly into your bank account.</p>
-                        `;
-                    }
-
-                    // Pre-fetch Seller Listings
-                    fetchMyProducts();
-
-                } else if (role === "buyer") {
-                    // Reveal Buyer Marketplace Tab
-                    tabMarketBtn.classList.remove('hidden');
-                    fetchMarketplaceCatalog();
-                } else if (role === "admin") {
-                    // Reveal Admin Vetting Control
-                    tabAdminBtn.classList.remove('hidden');
-                    fetchAdminPendingQueue();
-                }
-            } catch (error) {
-                console.error(error.message);
-            }
-        }
-
-        async function saveUserProfile() {
-            const token = localStorage.getItem("user_token");
-            if (!token) return;
-
-            const displayName = document.getElementById('db-display-name').value;
-            const preferredLang = document.getElementById('db-preferred-lang').value;
-            const isSeller = localStorage.getItem("user_role") === "seller";
-
-            const payload = {
-                displayName: displayName,
-                preferredLang: preferredLang
-            };
-
-            if (isSeller) {
-                payload.fullName = document.getElementById('db-full-name').value;
-                payload.phone = document.getElementById('db-phone').value;
-            }
-
-            try {
-                const res = await fetch(`${API_BASE_URL}/api/portal/profile`, {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
-                    },
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.detail || "Failed to save profile details.");
-
-                localStorage.setItem("user_display_name", data.displayName);
-                renderSessionUI();
-                changeLanguage(preferredLang);
-                alert("Profile details saved successfully!");
-            } catch (error) {
-                alert(error.message);
-            }
-        }
-
-        async function saveBankWireDetails() {
-            const token = localStorage.getItem("user_token");
-            if (!token) return;
-
-            const payload = {
-                bankName: document.getElementById('bank-name').value,
-                swiftCode: document.getElementById('bank-swift').value,
-                accountNumber: document.getElementById('bank-account').value,
-                accountName: document.getElementById('bank-acc-name').value
-            };
-
-            try {
-                const res = await fetch(`${API_BASE_URL}/api/portal/bank-details`, {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
-                    },
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.detail || "Failed to save wire coordinates.");
-
-                fetchUserProfile();
-                alert("USD bank wire coordinates verified and activated successfully! You are now Sell Ready.");
-            } catch (error) {
-                alert(error.message);
-            }
-        }
-
-        // ---------------------------------------------------------------------
-        // SPRINT 3: SELLER WIZARD & ADMIN MODERATION ENGINE CONTROLLERS
-        // ---------------------------------------------------------------------
-        function toggleRevenueFields(checked) {
-            const group = document.getElementById('revenue-fields-group');
-            if (checked) {
-                group.classList.remove('hidden');
-            } else {
-                group.classList.add('hidden');
-                // Clear fields
-                document.getElementById('add-prod-mrr').value = 0;
-                document.getElementById('add-prod-arr').value = 0;
-                document.getElementById('add-prod-revenue').value = 0;
-                document.getElementById('add-prod-profit').value = 0;
-                document.getElementById('add-prod-ebitda').value = 0;
-            }
-        }
-
-        async function uploadProductLogoBinary(file) {
-            if (!file) return;
-            const token = localStorage.getItem("user_token");
-            if (!token) return;
-
-            // Set placeholder visual loading state
-            const icon = document.getElementById('logo-placeholder-icon');
-            const img = document.getElementById('logo-preview-img');
-            icon.className = "fa-solid fa-spinner fa-spin text-2xl text-brand-emerald";
-            img.classList.add('hidden');
-
-            const formData = new FormData();
-            formData.append("file", file);
-
-            try {
-                const res = await fetch(`${API_BASE_URL}/api/portal/products/upload-logo`, {
-                    method: "POST",
-                    headers: { "Authorization": `Bearer ${token}` },
-                    body: formData
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.detail || "Failed to upload logo binary.");
-
-                // Render thumbnail preview
-                icon.classList.add('hidden');
-                img.src = data.logoUrl;
-                img.classList.remove('hidden');
-                document.getElementById('db-product-logo').value = data.logoUrl;
-                console.log("Product Logo uploaded successfully! URL:", data.logoUrl);
-            } catch (error) {
-                icon.className = "fa-solid fa-circle-exclamation text-2xl text-red-500";
-                alert(error.message);
-            }
-        }
-
-        async function submitProductListing(event) {
-            event.preventDefault();
-            const token = localStorage.getItem("user_token");
-            if (!token) return;
-
-            // Read Selected Product Types
-            const selectedTypes = [];
-            document.querySelectorAll('input[name="prod-type"]:checked').forEach(cb => {
-                selectedTypes.push(cb.value);
-            });
-
-            if (selectedTypes.length === 0) {
-                alert("Please select at least one Product Type category.");
-                return;
-            }
-
-            const payload = {
-                title: document.getElementById('add-prod-title').value,
-                description: document.getElementById('add-prod-desc').value,
-                productType: selectedTypes,
-                techStack: document.getElementById('add-prod-tech').value.split(",").map(x => x.trim()),
-                hasRevenue: document.getElementById('add-prod-has-revenue').checked,
-                mrr: parseFloat(document.getElementById('add-prod-mrr').value) || 0.0,
-                arr: parseFloat(document.getElementById('add-prod-arr').value) || 0.0,
-                annualRevenue: parseFloat(document.getElementById('add-prod-revenue').value) || 0.0,
-                annualProfit: parseFloat(document.getElementById('add-prod-profit').value) || 0.0,
-                ebitda: parseFloat(document.getElementById('add-prod-ebitda').value) || 0.0,
-                askingPrice: parseFloat(document.getElementById('add-prod-price').value),
-                metricsSource: "manual",
-                productLogo: document.getElementById('db-product-logo').value || "https://storage.googleapis.com/nanocorn-vault/logos/default_logo.png",
-                realName: document.getElementById('add-prod-real-name').value,
-                realURL: document.getElementById('add-prod-real-url').value,
-                domainTransferMethod: document.getElementById('add-prod-trans-domain').value,
-                codebaseTransferMethod: document.getElementById('add-prod-trans-code').value,
-                hostingTransferMethod: document.getElementById('add-prod-trans-hosting').value,
-                customerDatabaseMethod: document.getElementById('add-prod-trans-db').value,
-                paymentGatewayMethod: document.getElementById('add-prod-trans-gateway').value,
-                estimatedCompletionDays: parseInt(document.getElementById('add-prod-trans-days').value) || 3,
-                postSaleSupport: document.getElementById('add-prod-trans-support').value
-            };
-
-            try {
-                const res = await fetch(`${API_BASE_URL}/api/portal/products`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
-                    },
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.detail || "Failed to submit product listing.");
-
-                alert("Product Listing submitted successfully! It has been entered in the Admin review queue.");
-                
-                // Reset listing form and GCS previews
-                document.getElementById('add-product-form').reset();
-                document.getElementById('logo-placeholder-icon').className = "fa-solid fa-image text-2xl text-slate-300";
-                document.getElementById('logo-preview-img').classList.add('hidden');
-                document.getElementById('db-product-logo').value = "";
-                toggleRevenueFields(true);
-
-                // Fetch new list and switch tabs
-                fetchMyProducts();
-                switchTab('dashboard-products');
-            } catch (error) {
-                alert(error.message);
-            }
-        }
-
-        async function fetchMyProducts() {
-            const token = localStorage.getItem("user_token");
-            if (!token) return;
-
-            const container = document.getElementById('my-products-list');
-            container.innerHTML = `
-                <div class="flex items-center justify-center p-8 text-slate-400 font-semibold text-sm">
-                    <i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading listed products...
-                </div>
-            `;
-
-            try {
-                const res = await fetch(`${API_BASE_URL}/api/portal/products/my`, {
-                    headers: { "Authorization": `Bearer ${token}` }
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error("Failed to load products.");
-
-                if (data.length === 0) {
-                    container.innerHTML = `
-                        <div class="border border-dashed border-slate-200 rounded-2xl p-8 text-center text-sm font-semibold text-slate-400 space-y-4">
-                            <i class="fa-solid fa-cubes text-3xl text-slate-300"></i>
-                            <p>You have not listed any commercial products on our directory yet.</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                let html = "";
-                data.forEach(item => {
-                    const statusColors = {
-                        "draft": "border-slate-200 bg-slate-50 text-slate-500",
-                        "pending_review": "border-orange-200 bg-orange-50 text-orange-500",
-                        "active": "border-emerald-200 bg-emerald-50 text-brand-emerald",
-                        "under_contract": "border-blue-200 bg-blue-50 text-blue-500",
-                        "sold": "border-slate-300 bg-slate-100 text-brand-navy"
-                    };
-                    const badgeClass = statusColors[item.status] || statusColors["draft"];
-                    const dateFormatted = new Date(item.createdAt).toLocaleDateString();
-
-                    html += `
-                        <div class="border border-slate-100 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm hover:shadow-md transition-all">
-                            <div class="flex items-center gap-4">
-                                <img src="${item.productLogo}" class="w-14 h-14 rounded-xl object-cover border border-slate-200 bg-brand-light flex-shrink-0">
-                                <div>
-                                    <h4 class="text-sm font-black text-brand-navy">${item.title}</h4>
-                                    <p class="text-[10px] font-bold text-slate-400 mt-0.5">Created: ${dateFormatted} | Tech: ${item.techStack.join(", ")}</p>
-                                    <div class="flex gap-1.5 mt-2">
-                                        ${item.productType.map(t => `<span class="text-[9px] font-black tracking-wide text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">${t}</span>`).join("")}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex sm:flex-col items-end justify-between w-full sm:w-auto border-t sm:border-t-0 border-slate-50 pt-3 sm:pt-0 gap-2">
-                                <span class="text-xs font-black tracking-widest ${badgeClass} border px-2 py-0.5 rounded-md capitalize">${item.status.replace("_", " ")}</span>
-                                <span class="text-base font-black text-brand-navy">$${item.askingPrice.toLocaleString()} USD</span>
-                            </div>
-                        </div>
-                    `;
-                });
-                container.innerHTML = html;
-            } catch (error) {
-                container.innerHTML = `<div class="p-8 text-center text-red-500 font-semibold text-sm">Failed to load listed products.</div>`;
-            }
-        }
-
-        async function fetchAdminPendingQueue() {
-            const token = localStorage.getItem("user_token");
-            if (!token) return;
-
-            const container = document.getElementById('admin-pending-queue');
-            container.innerHTML = `
-                <div class="flex items-center justify-center p-8 text-slate-400 font-semibold text-sm">
-                    <i class="fa-solid fa-spinner fa-spin mr-2"></i> Fetching pending submissions...
-                </div>
-            `;
-
-            try {
-                const res = await fetch(`${API_BASE_URL}/api/admin/products/pending`, {
-                    headers: { "Authorization": `Bearer ${token}` }
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error("Failed to load admin queue.");
-
-                if (data.length === 0) {
-                    container.innerHTML = `
-                        <div class="border border-dashed border-slate-200 rounded-2xl p-8 text-center text-sm font-semibold text-emerald-500 bg-emerald-50/10 space-y-4">
-                            <i class="fa-solid fa-circle-check text-3xl"></i>
-                            <p>Verification queue is fully cleared! No products are currently pending review.</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                let html = "";
-                data.forEach(item => {
-                    const dateFormatted = new Date(item.createdAt).toLocaleDateString();
-                    html += `
-                        <div class="border border-slate-100 rounded-2xl p-6 shadow-sm space-y-4 bg-brand-light/30">
-                            <!-- Header -->
-                            <div class="flex items-start justify-between border-b border-slate-100 pb-3 gap-4">
-                                <div class="flex items-center gap-4">
-                                    <img src="${item.productLogo}" class="w-14 h-14 rounded-xl object-cover border border-slate-200 bg-white">
-                                    <div>
-                                        <h4 class="text-base font-black text-brand-navy">${item.title}</h4>
-                                        <p class="text-xs font-bold text-slate-400">Owner: ${item.sellerId} | Submitted: ${dateFormatted}</p>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <span class="text-xs font-black tracking-widest border border-orange-200 bg-orange-50 text-orange-500 px-2 py-0.5 rounded-md">PENDING VETTING</span>
-                                    <h3 class="text-lg font-black text-brand-navy mt-1.5">$${item.askingPrice.toLocaleString()} USD</h3>
-                                </div>
-                            </div>
-
-                            <!-- Meta -->
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                                <div class="space-y-1.5">
-                                    <div><strong class="text-brand-slate">Real Name (Protected):</strong> <span class="font-bold text-brand-emerald">${item.realName}</span></div>
-                                    <div><strong class="text-brand-slate">Real URL (Protected):</strong> <a href="${item.realURL}" target="_blank" class="font-bold text-blue-500 underline">${item.realURL}</a></div>
-                                    <div><strong class="text-brand-slate">Tech Stack:</strong> <span class="font-semibold">${item.techStack.join(", ")}</span></div>
-                                    <div><strong class="text-brand-slate">Product Classes:</strong> <span class="font-semibold">${item.productType.join(", ")}</span></div>
-                                </div>
-                                <div class="space-y-1.5">
-                                    <div><strong class="text-brand-slate">Has Revenue?</strong> <span class="font-bold">${item.hasRevenue ? "YES" : "NO"}</span></div>
-                                    <div><strong class="text-brand-slate">MRR / ARR:</strong> <span class="font-semibold">$${item.mrr} / $${item.arr}</span></div>
-                                    <div><strong class="text-brand-slate">EBITDA:</strong> <span class="font-semibold">$${item.ebitda}</span></div>
-                                    <div><strong class="text-brand-slate">M&A ETC Timeline:</strong> <span class="font-bold text-brand-emerald">${item.transferTerms.estimatedCompletionDays} Days</span></div>
-                                </div>
-                            </div>
-
-                            <!-- Description -->
-                            <div class="text-xs text-brand-slate leading-relaxed border-t border-slate-100 pt-3">
-                                <strong>Description:</strong> <p class="mt-1">${item.description}</p>
-                            </div>
-
-                            <!-- Transfer terms details -->
-                            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-[10px] font-semibold text-brand-slate pt-2">
-                                <div class="border border-slate-200 rounded p-2 bg-white"><strong>Domain Transfer:</strong><p class="mt-1 text-slate-500">${item.transferTerms.domainTransferMethod}</p></div>
-                                <div class="border border-slate-200 rounded p-2 bg-white"><strong>Code Transfer:</strong><p class="mt-1 text-slate-500">${item.transferTerms.codebaseTransferMethod}</p></div>
-                                <div class="border border-slate-200 rounded p-2 bg-white"><strong>Hosting Transfer:</strong><p class="mt-1 text-slate-500">${item.transferTerms.hostingTransferMethod}</p></div>
-                                <div class="border border-slate-200 rounded p-2 bg-white"><strong>DB Migration:</strong><p class="mt-1 text-slate-500">${item.transferTerms.customerDatabaseMethod}</p></div>
-                                <div class="border border-slate-200 rounded p-2 bg-white"><strong>Gateway Swaps:</strong><p class="mt-1 text-slate-500">${item.transferTerms.paymentGatewayMethod}</p></div>
-                            </div>
-
-                            <!-- Moderation Commentary & Actions -->
-                            <div class="border-t border-slate-100 pt-4 flex flex-col sm:flex-row gap-4 items-center justify-between">
-                                <input type="text" id="vet-reason-${item.productId}" class="w-full sm:flex-grow bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-brand-emerald" placeholder="Write admin moderation feedback commentary reason...">
-                                <div class="flex gap-2 w-full sm:w-auto">
-                                    <button onclick="moderateProduct('${item.productId}', 'active')" class="flex-1 sm:flex-none bg-brand-emerald hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-all flex items-center justify-center gap-1.5"><i class="fa-solid fa-circle-check"></i> Approve</button>
-                                    <button onclick="moderateProduct('${item.productId}', 'draft')" class="flex-1 sm:flex-none bg-red-500 hover:bg-red-700 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-all flex items-center justify-center gap-1.5"><i class="fa-solid fa-circle-xmark"></i> Reject</button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-                container.innerHTML = html;
-            } catch (error) {
-                container.innerHTML = `<div class="p-8 text-center text-red-500 font-semibold text-sm">Failed to load admin vetting queue.</div>`;
-            }
-        }
-
-        async function moderateProduct(productId, targetStatus) {
-            const token = localStorage.getItem("user_token");
-            if (!token) return;
-
-            const reasonInput = document.getElementById(`vet-reason-${productId}`);
-            const reason = reasonInput ? reasonInput.value.strip() : "";
-
-            if (!reason) {
-                alert("Please write a mandatory vetting commentary reason before submitting your moderation action.");
-                return;
-            }
-
-            try {
-                const res = await fetch(`${API_BASE_URL}/api/admin/products/${productId}/status`, {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ status: targetStatus, reason: reason })
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.detail || "Failed to moderate product.");
-
-                alert(`Success! Product status has been updated to '${targetStatus}'. Audit logs generated.`);
-                fetchAdminPendingQueue();
-            } catch (error) {
-                alert(error.message);
-            }
-        }
-
-        function switchTab(tabId) {
-            const profileTab = document.getElementById('sub-view-profile');
-            const bankTab = document.getElementById('sub-view-bank');
-            const productsTab = document.getElementById('sub-view-products');
-            const addProductTab = document.getElementById('sub-view-add-product');
-            const adminTab = document.getElementById('sub-view-admin');
-
-            const btnProfile = document.getElementById('tab-btn-profile');
-            const btnBank = document.getElementById('tab-btn-bank');
-            const btnProducts = document.getElementById('tab-btn-products');
-            const btnAddProduct = document.getElementById('tab-btn-add-product');
-            const btnAdmin = document.getElementById('tab-btn-admin');
-
-            // Hide all tabs
-            profileTab.classList.add('hidden');
-            bankTab.classList.add('hidden');
-            productsTab.classList.add('hidden');
-            addProductTab.classList.add('hidden');
-            adminTab.classList.add('hidden');
-
-            // Reset all sidebar classes to default inactive
-            const inactiveClass = "flex-1 md:flex-none text-left px-4 py-3 rounded-xl transition-all hover:bg-slate-50 flex items-center gap-3";
-            const activeClass = "flex-1 md:flex-none text-left px-4 py-3 rounded-xl transition-all bg-emerald-50 text-brand-emerald flex items-center gap-3";
-            
-            btnProfile.className = inactiveClass;
-            btnBank.className = inactiveClass;
-            btnProducts.className = inactiveClass;
-            btnAddProduct.className = inactiveClass;
-            btnAdmin.className = inactiveClass;
-
-            if (tabId === 'dashboard-profile') {
-                profileTab.classList.remove('hidden');
-                btnProfile.className = activeClass;
-            } else if (tabId === 'dashboard-bank') {
-                bankTab.classList.remove('hidden');
-                btnBank.className = activeClass;
-            } else if (tabId === 'dashboard-products') {
-                productsTab.classList.remove('hidden');
-                btnProducts.className = activeClass;
-            } else if (tabId === 'dashboard-add-product') {
-                addProductTab.classList.remove('hidden');
-                btnAddProduct.className = activeClass;
-            } else if (tabId === 'dashboard-admin') {
-                adminTab.classList.remove('hidden');
-                btnAdmin.className = activeClass;
-            }
-        }
-    </script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/i18n-setup.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/dashboard.js"></script>
+    <script src="assets/js/marketplace.js"></script>
+    <script src="assets/js/nda.js"></script>
 </body>
 </html>
