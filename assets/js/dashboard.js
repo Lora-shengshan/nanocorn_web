@@ -235,6 +235,31 @@ function updatePriceSliderDisplay(value) {
 }
 window.updatePriceSliderDisplay = updatePriceSliderDisplay;
 
+function resetAddProductForm() {
+    window._editingProductId = null;
+    const submitBtn = document.querySelector("#add-product-form button[type='submit']");
+    if (submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> <span>Submit Product for Vetting</span>';
+
+    const form = document.getElementById('add-product-form');
+    if (form) form.reset();
+    
+    const display = document.getElementById('add-prod-price-display');
+    if (display) display.textContent = "$15,000";
+    
+    const icon = document.getElementById('logo-placeholder-icon');
+    if (icon) icon.className = "fa-solid fa-image text-2xl text-slate-300";
+    const img = document.getElementById('logo-preview-img');
+    if (img) img.classList.add('hidden');
+    const dbLogo = document.getElementById('db-product-logo');
+    if (dbLogo) dbLogo.value = "";
+    
+    // Default checked is true
+    const revenueToggle = document.getElementById('add-prod-has-revenue');
+    if (revenueToggle) revenueToggle.checked = true;
+    toggleRevenueFields(true);
+}
+window.resetAddProductForm = resetAddProductForm;
+
 async function submitProductListing(event) {
     event.preventDefault();
 
@@ -288,25 +313,7 @@ async function submitProductListing(event) {
 
         showToast(isEditMode ? "Product Listing updated successfully! It has re-entered the pending vetting queue." : "Product Listing submitted successfully! It has been entered in the Admin review queue.", "success");
         
-        // Reset edit states
-        window._editingProductId = null;
-        const submitBtn = document.querySelector("#add-product-form button[type='submit']");
-        if (submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> <span>Submit Product for Vetting</span>';
-
-        const form = document.getElementById('add-product-form');
-        if (form) form.reset();
-        
-        const display = document.getElementById('add-prod-price-display');
-        if (display) display.textContent = "$15,000";
-        
-        const icon = document.getElementById('logo-placeholder-icon');
-        if (icon) icon.className = "fa-solid fa-image text-2xl text-slate-300";
-        const img = document.getElementById('logo-preview-img');
-        if (img) img.classList.add('hidden');
-        const dbLogo = document.getElementById('db-product-logo');
-        if (dbLogo) dbLogo.value = "";
-        
-        toggleRevenueFields(true);
+        resetAddProductForm();
 
         fetchMyProducts();
         switchTab('dashboard-products');
@@ -477,6 +484,7 @@ function switchTab(tabId) {
     } else if (tabId === 'dashboard-add-product') {
         if (addProductTab) addProductTab.classList.remove('hidden');
         if (btnAddProduct) btnAddProduct.className = activeClass;
+        resetAddProductForm();
     } else if (tabId === 'dashboard-chats') {
         if (chatsTab) chatsTab.classList.remove('hidden');
         if (btnChats) btnChats.className = activeClass;
